@@ -101,7 +101,7 @@ void signaling::set_state(STATES state, bool show_previous_pattern) {
 
     switch (state) {
         case INIT:
-            _signaling_pattern_brightness = 0xFFFFFFFFFFFF;
+            _signaling_pattern_brightness = 0xFFFFFFFFFFFFFFFF;
             *holder_to_write_red = 0xFF;
             *holder_to_write_green = 0;
             *holder_to_write_blue = 0;

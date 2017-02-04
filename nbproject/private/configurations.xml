@@ -284,6 +284,8 @@
             <df name="platform-6">
               <df name="src">
                 <df name="src">
+                  <df name="display">
+                  </df>
                 </df>
               </df>
             </df>
@@ -2407,6 +2409,63 @@
       </df>
       <df name="user">
         <df name="inc">
+          <df name="display">
+            <df name="Fonts">
+              <in>FreeMono12pt7b.h</in>
+              <in>FreeMono18pt7b.h</in>
+              <in>FreeMono24pt7b.h</in>
+              <in>FreeMono9pt7b.h</in>
+              <in>FreeMonoBold12pt7b.h</in>
+              <in>FreeMonoBold18pt7b.h</in>
+              <in>FreeMonoBold24pt7b.h</in>
+              <in>FreeMonoBold9pt7b.h</in>
+              <in>FreeMonoBoldOblique12pt7b.h</in>
+              <in>FreeMonoBoldOblique18pt7b.h</in>
+              <in>FreeMonoBoldOblique24pt7b.h</in>
+              <in>FreeMonoBoldOblique9pt7b.h</in>
+              <in>FreeMonoOblique12pt7b.h</in>
+              <in>FreeMonoOblique18pt7b.h</in>
+              <in>FreeMonoOblique24pt7b.h</in>
+              <in>FreeMonoOblique9pt7b.h</in>
+              <in>FreeSans12pt7b.h</in>
+              <in>FreeSans18pt7b.h</in>
+              <in>FreeSans24pt7b.h</in>
+              <in>FreeSans9pt7b.h</in>
+              <in>FreeSansBold12pt7b.h</in>
+              <in>FreeSansBold18pt7b.h</in>
+              <in>FreeSansBold24pt7b.h</in>
+              <in>FreeSansBold9pt7b.h</in>
+              <in>FreeSansBoldOblique12pt7b.h</in>
+              <in>FreeSansBoldOblique18pt7b.h</in>
+              <in>FreeSansBoldOblique24pt7b.h</in>
+              <in>FreeSansBoldOblique9pt7b.h</in>
+              <in>FreeSansOblique12pt7b.h</in>
+              <in>FreeSansOblique18pt7b.h</in>
+              <in>FreeSansOblique24pt7b.h</in>
+              <in>FreeSansOblique9pt7b.h</in>
+              <in>FreeSerif12pt7b.h</in>
+              <in>FreeSerif18pt7b.h</in>
+              <in>FreeSerif24pt7b.h</in>
+              <in>FreeSerif9pt7b.h</in>
+              <in>FreeSerifBold12pt7b.h</in>
+              <in>FreeSerifBold18pt7b.h</in>
+              <in>FreeSerifBold24pt7b.h</in>
+              <in>FreeSerifBold9pt7b.h</in>
+              <in>FreeSerifBoldItalic12pt7b.h</in>
+              <in>FreeSerifBoldItalic18pt7b.h</in>
+              <in>FreeSerifBoldItalic24pt7b.h</in>
+              <in>FreeSerifBoldItalic9pt7b.h</in>
+              <in>FreeSerifItalic12pt7b.h</in>
+              <in>FreeSerifItalic18pt7b.h</in>
+              <in>FreeSerifItalic24pt7b.h</in>
+              <in>FreeSerifItalic9pt7b.h</in>
+              <in>TomThumb.h</in>
+            </df>
+            <in>Adafruit_GFX.h</in>
+            <in>Adafruit_ST7735.h</in>
+            <in>Display.h</in>
+            <in>gfxfont.h</in>
+          </df>
           <in>application.h</in>
           <in>debug.h</in>
         </df>
@@ -2428,6 +2487,11 @@
           </df>
         </df>
         <df name="src">
+          <df name="display">
+            <in>Adafruit_GFX.cpp</in>
+            <in>Adafruit_ST7735.cpp</in>
+            <in>glcdfont.c</in>
+          </df>
           <in>application.cpp</in>
           <in>debug.cpp</in>
         </df>
@@ -2880,8 +2944,9 @@
           <runcommandpicklistitem>make program-dfu PARTICLE_DEVELOP=1 PLATFORM=photon USE_SWD_JTAG=y MODULAR=n  </runcommandpicklistitem>
           <runcommandpicklistitem>make program-dfu PARTICLE_DEVELOP=1 PLATFORM=photon USE_SWD_JTAG=n MODULAR=y</runcommandpicklistitem>
           <runcommandpicklistitem>make program-dfu PARTICLE_DEVELOP=1 PLATFORM=photon USE_SWD_JTAG=y MODULAR=n</runcommandpicklistitem>
+          <runcommandpicklistitem>make program-dfu PARTICLE_DEVELOP=1 PLATFORM=photon USE_SWD_JTAG=n MODULAR=n</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>make program-dfu PARTICLE_DEVELOP=1 PLATFORM=photon USE_SWD_JTAG=y MODULAR=n</runcommand>
+        <runcommand>make program-dfu PARTICLE_DEVELOP=1 PLATFORM=photon USE_SWD_JTAG=n MODULAR=n</runcommand>
         <rundir>main</rundir>
         <buildfirst>false</buildfirst>
         <terminal-type>0</terminal-type>

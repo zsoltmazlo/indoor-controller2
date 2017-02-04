@@ -972,7 +972,17 @@
         </df>
       </df>
       <df name="user">
+        <df name="inc">
+          <df name="display">
+            <in>Display.h</in>
+          </df>
+        </df>
         <df name="src">
+          <df name="display">
+            <in>Adafruit_GFX.cpp</in>
+            <in>Adafruit_ST7735.cpp</in>
+            <in>glcdfont.c</in>
+          </df>
           <in>application.cpp</in>
           <in>debug.cpp</in>
         </df>
@@ -1317,8 +1327,8 @@
       <makefileType>
         <makeTool>
           <buildCommandWorkingDir>main</buildCommandWorkingDir>
-          <buildCommand>${MAKE} -f makefile PARTICLE_DEVELOP=1 PLATFORM=photon USE_SWD_JTAG=y MODULAR=n</buildCommand>
-          <cleanCommand>${MAKE} -f makefile clean PARTICLE_DEVELOP=1 PLATFORM=photon USE_SWD_JTAG=y MODULAR=n</cleanCommand>
+          <buildCommand>${MAKE} -f makefile PARTICLE_DEVELOP=1 PLATFORM=photon USE_SWD_JTAG=n MODULAR=n</buildCommand>
+          <cleanCommand>${MAKE} -f makefile clean PARTICLE_DEVELOP=1 PLATFORM=photon USE_SWD_JTAG=n MODULAR=n</cleanCommand>
           <executablePath></executablePath>
           <cTool>
             <preprocessorList>
@@ -3274,7 +3284,6 @@
             <Elem>USE_MICRORNG</Elem>
             <Elem>USE_SRP_SHA_512</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
             <Elem>WWD_DIRECT_RESOURCES</Elem>
             <Elem>WWD_STARTUP_DELAY=10</Elem>
             <Elem>_POSIX_C_SOURCE=200809</Elem>
@@ -3379,7 +3388,6 @@
             <Elem>USE_MICRORNG</Elem>
             <Elem>USE_SRP_SHA_512</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
             <Elem>WWD_DIRECT_RESOURCES</Elem>
             <Elem>WWD_STARTUP_DELAY=10</Elem>
             <Elem>_POSIX_C_SOURCE=200809</Elem>
@@ -3485,7 +3493,6 @@
             <Elem>USE_MICRORNG</Elem>
             <Elem>USE_SRP_SHA_512</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
             <Elem>WWD_DIRECT_RESOURCES</Elem>
             <Elem>WWD_STARTUP_DELAY=10</Elem>
             <Elem>_POSIX_C_SOURCE=200809</Elem>
@@ -3590,7 +3597,6 @@
             <Elem>USE_MICRORNG</Elem>
             <Elem>USE_SRP_SHA_512</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
             <Elem>WWD_DIRECT_RESOURCES</Elem>
             <Elem>WWD_STARTUP_DELAY=10</Elem>
             <Elem>_POSIX_C_SOURCE=200809</Elem>
@@ -3696,7 +3702,6 @@
             <Elem>USE_MICRORNG</Elem>
             <Elem>USE_SRP_SHA_512</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
             <Elem>WWD_DIRECT_RESOURCES</Elem>
             <Elem>WWD_STARTUP_DELAY=10</Elem>
             <Elem>_POSIX_C_SOURCE=200809</Elem>
@@ -3801,7 +3806,6 @@
             <Elem>USE_MICRORNG</Elem>
             <Elem>USE_SRP_SHA_512</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
             <Elem>WWD_DIRECT_RESOURCES</Elem>
             <Elem>WWD_STARTUP_DELAY=10</Elem>
             <Elem>_POSIX_C_SOURCE=200809</Elem>
@@ -3858,7 +3862,6 @@
             <Elem>PRODUCT_ID=6</Elem>
             <Elem>STM32F2XX</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
             <Elem>_GNU_SOURCE</Elem>
           </preprocessorList>
         </cTool>
@@ -4017,7 +4020,6 @@
             <Elem>PARTICLE_NO_ARDUINO_COMPATIBILITY=0</Elem>
             <Elem>STM32F2XX</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
           </preprocessorList>
         </cTool>
       </folder>
@@ -4137,7 +4139,6 @@
             <Elem>STM32F2XX</Elem>
             <Elem>SYSTEM_VERSION_STRING=0.6.1-rc.2</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
             <Elem>_GNU_SOURCE</Elem>
           </preprocessorList>
         </ccTool>
@@ -4169,6 +4170,52 @@
         </cTool>
       </folder>
       <folder path="0/user">
+        <cTool>
+          <incDir>
+            <pElem>user/inc</pElem>
+            <pElem>wiring/inc</pElem>
+            <pElem>system/inc</pElem>
+            <pElem>services/inc</pElem>
+            <pElem>communication/src</pElem>
+            <pElem>hal/inc</pElem>
+            <pElem>hal/shared</pElem>
+            <pElem>hal/src/photon</pElem>
+            <pElem>hal/src/stm32f2xx</pElem>
+            <pElem>hal/src/stm32</pElem>
+            <pElem>hal/src/photon/api</pElem>
+            <pElem>platform/shared/inc</pElem>
+            <pElem>platform/MCU/STM32F2xx/CMSIS/Include</pElem>
+            <pElem>platform/MCU/STM32F2xx/CMSIS/Device/ST/Include</pElem>
+            <pElem>platform/MCU/STM32F2xx/SPARK_Firmware_Driver/inc</pElem>
+            <pElem>platform/MCU/shared/STM32/inc</pElem>
+            <pElem>platform/MCU/STM32F2xx/STM32_StdPeriph_Driver/inc</pElem>
+            <pElem>platform/MCU/STM32F2xx/STM32_USB_Device_Driver/inc</pElem>
+            <pElem>platform/MCU/STM32F2xx/STM32_USB_Host_Driver/inc</pElem>
+            <pElem>platform/MCU/STM32F2xx/STM32_USB_OTG_Driver/inc</pElem>
+            <pElem>dynalib/inc</pElem>
+            <pElem>user/src</pElem>
+            <pElem>user/libraries</pElem>
+            <pElem>user</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>DFU_BUILD_ENABLE</Elem>
+            <Elem>INCLUDE_PLATFORM=1</Elem>
+            <Elem>LOG_INCLUDE_SOURCE_INFO=1</Elem>
+            <Elem>LOG_MODULE_CATEGORY="app"</Elem>
+            <Elem>PARTICLE_NO_ARDUINO_COMPATIBILITY=0</Elem>
+            <Elem>PARTICLE_USER_MODULE</Elem>
+            <Elem>PRODUCT_FIRMWARE_VERSION=65535</Elem>
+            <Elem>PRODUCT_ID=6</Elem>
+            <Elem>SPARK_PLATFORM</Elem>
+            <Elem>SPARK_PLATFORM_NET=BCM9WCDUSI09</Elem>
+            <Elem>STM32F2XX</Elem>
+            <Elem>USE_CS=A2</Elem>
+            <Elem>USE_SPI=SPI</Elem>
+            <Elem>USE_STDPERIPH_DRIVER</Elem>
+            <Elem>USE_THREADING=0</Elem>
+            <Elem>_GNU_SOURCE</Elem>
+          </preprocessorList>
+        </cTool>
         <ccTool>
           <preprocessorList>
             <Elem>SYSTEM_VERSION_STRING=0.6.1-rc.2</Elem>
@@ -4219,7 +4266,6 @@
             <Elem>USE_CS=A2</Elem>
             <Elem>USE_SPI=SPI</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
             <Elem>USE_THREADING=0</Elem>
           </preprocessorList>
         </ccTool>
@@ -4267,7 +4313,6 @@
             <Elem>STM32F2XX</Elem>
             <Elem>SYSTEM_VERSION_STRING=0.6.1-rc.2</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
             <Elem>_GNU_SOURCE</Elem>
           </preprocessorList>
         </ccTool>
@@ -5419,7 +5464,6 @@
             <Elem>PARTICLE_NO_ARDUINO_COMPATIBILITY=0</Elem>
             <Elem>STM32F2XX</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -5453,7 +5497,6 @@
             <Elem>PARTICLE_NO_ARDUINO_COMPATIBILITY=0</Elem>
             <Elem>STM32F2XX</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -5497,7 +5540,6 @@
             <Elem>PARTICLE_NO_ARDUINO_COMPATIBILITY=0</Elem>
             <Elem>STM32F2XX</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -5531,7 +5573,6 @@
             <Elem>PARTICLE_NO_ARDUINO_COMPATIBILITY=0</Elem>
             <Elem>STM32F2XX</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -5565,7 +5606,6 @@
             <Elem>PARTICLE_NO_ARDUINO_COMPATIBILITY=0</Elem>
             <Elem>STM32F2XX</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -5599,7 +5639,6 @@
             <Elem>PARTICLE_NO_ARDUINO_COMPATIBILITY=0</Elem>
             <Elem>STM32F2XX</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -5633,7 +5672,6 @@
             <Elem>PARTICLE_NO_ARDUINO_COMPATIBILITY=0</Elem>
             <Elem>STM32F2XX</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -5667,7 +5705,6 @@
             <Elem>PARTICLE_NO_ARDUINO_COMPATIBILITY=0</Elem>
             <Elem>STM32F2XX</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -5882,7 +5919,6 @@
             <Elem>STM32F2XX</Elem>
             <Elem>SYSTEM_VERSION_STRING=0.6.1-rc.2</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -5917,7 +5953,6 @@
             <Elem>STM32F2XX</Elem>
             <Elem>SYSTEM_VERSION_STRING=0.6.1-rc.2</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -5952,7 +5987,6 @@
             <Elem>STM32F2XX</Elem>
             <Elem>SYSTEM_VERSION_STRING=0.6.1-rc.2</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -5987,7 +6021,6 @@
             <Elem>STM32F2XX</Elem>
             <Elem>SYSTEM_VERSION_STRING=0.6.1-rc.2</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -6022,7 +6055,6 @@
             <Elem>STM32F2XX</Elem>
             <Elem>SYSTEM_VERSION_STRING=0.6.1-rc.2</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -6062,7 +6094,6 @@
             <Elem>STM32F2XX</Elem>
             <Elem>SYSTEM_VERSION_STRING=0.6.1-rc.2</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -6127,7 +6158,6 @@
             <Elem>STM32F2XX</Elem>
             <Elem>SYSTEM_VERSION_STRING=0.6.1-rc.2</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -6232,7 +6262,6 @@
             <Elem>STM32F2XX</Elem>
             <Elem>SYSTEM_VERSION_STRING=0.6.1-rc.2</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -6267,7 +6296,6 @@
             <Elem>STM32F2XX</Elem>
             <Elem>SYSTEM_VERSION_STRING=0.6.1-rc.2</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -6302,7 +6330,6 @@
             <Elem>STM32F2XX</Elem>
             <Elem>SYSTEM_VERSION_STRING=0.6.1-rc.2</Elem>
             <Elem>USE_STDPERIPH_DRIVER</Elem>
-            <Elem>USE_SWD_JTAG</Elem>
           </preprocessorList>
         </cTool>
       </item>
@@ -6531,6 +6558,8 @@
         <ccTool flags="1">
         </ccTool>
       </item>
+      <item path="user/inc/display/Display.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="user/src/application.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="1">
         </ccTool>
@@ -6538,6 +6567,21 @@
       <item path="user/src/debug.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="1">
         </ccTool>
+      </item>
+      <item path="user/src/display/Adafruit_GFX.cpp" ex="false" tool="1" flavor2="8">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="user/src/display/Adafruit_ST7735.cpp"
+            ex="false"
+            tool="1"
+            flavor2="8">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="user/src/display/glcdfont.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="3">
+        </cTool>
       </item>
       <item path="user/tests/accept/features/cloud/cloudtest.cpp"
             ex="false"
