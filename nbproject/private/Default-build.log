@@ -1,0 +1,6 @@
+Building firmware for Spark core, platform ID: 0, product ID: 0
+/usr/bin/make -C ./communication 
+make[1]: Entering directory `/media/dev/photon/light-controller/communication'
+../build/checks.mk:5: *** Please note the develop branch contains untested, unreleased code. We recommend using the 'latest' branch which contains the latest released firmware code. To build the develop branch, please see the the build documentation at https://github.com/spark/firmware/blob/develop/docs/build.md#building-the-develop-branch.  Stop.
+make[1]: Leaving directory `/media/dev/photon/light-controller/communication'
+make: *** [communication] Error 2
