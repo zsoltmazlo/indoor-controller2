@@ -34,7 +34,7 @@
 #include "cc3000_spi.h"
 #include "socket.h"
 #include "spark_macros.h"
-#include "debug.h"
+#include "signaling.h"
 #include "spi_bus.h"
 #include "delay_hal.h"
 

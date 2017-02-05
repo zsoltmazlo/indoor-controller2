@@ -46,7 +46,7 @@
 #include "evnt_handler.h"
 #include "netapp.h"
 #include "hw_config.h"
-#include "debug.h"
+#include "signaling.h"
 #include "spark_macros.h"
 
 #include <string.h>

@@ -56,7 +56,7 @@
 #include "netapp.h"
 #include "spi.h"
 #include "hw_config.h"
-#include "debug.h"
+#include "signaling.h"
 #include "spark_macros.h"
 #include <stdatomic.h>
 

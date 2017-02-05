@@ -26,7 +26,7 @@
 
 /* Define abort() */
 #include <stdlib.h>
-#include "debug.h"
+#include "signaling.h"
 
 void *__dso_handle;
 

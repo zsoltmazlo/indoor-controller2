@@ -67,7 +67,7 @@
 #include "usbd_cdc_core.h"
 #include "usbd_desc.h"
 #include "usbd_req.h"
-#include "debug.h"
+#include "signaling.h"
 
 #ifndef MIN
 #define MIN(a, b) (a) < (b) ? (a) : (b)

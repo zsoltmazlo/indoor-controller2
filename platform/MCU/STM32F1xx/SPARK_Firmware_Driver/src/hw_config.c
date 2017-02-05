@@ -29,7 +29,7 @@
 #include "usb_pwr.h"
 #include <string.h>
 #include "spi_bus.h"
-#include "debug.h"
+#include "signaling.h"
 #include "cc3000_spi.h"
 #include "rgbled_hal.h"
 

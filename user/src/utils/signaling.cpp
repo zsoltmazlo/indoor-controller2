@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-#include "debug.h"
+#include "utils/signaling.h"
 #include "spark_wiring.h"
 #include "spark_wiring_rgb.h"
 #include "spark_wiring_thread.h"

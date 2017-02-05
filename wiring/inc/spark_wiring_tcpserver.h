@@ -28,8 +28,7 @@
 
 #include "spark_wiring.h"
 #include "system_network.h"
-
-class TCPClient;
+#include "spark_wiring_tcpclient.h"
 
 class TCPServer : public Print {
 private:

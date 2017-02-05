@@ -8,28 +8,22 @@
  * File:   debug.h
  * Author: zsoltmazlo
  *
- * Created on February 4, 2017, 3:22 PM
+ * Created on February 4, 2017, 11:05 PM
  */
 
-#ifndef DEBUG_H
-#define DEBUG_H
+#ifndef APP_DEBUG_H
+#define APP_DEBUG_H
 
 #include <stdint.h>
 
-namespace signaling {
-
-	enum STATES {
-		INIT,
-		IDLE
-	};
+namespace debug {
 	
-	void set_state(STATES state, bool show_previous_pattern = false);
-
-	void start_thread(uint8_t priority);
+	void init(uint32_t baud_rate);
 	
+	void print(const char* fmt, ...);
+	
+	void println(const char* fmt, ...);
 }
 
-
-
-#endif /* DEBUG_H */
+#endif /* APP_DEBUG_H */
 
