@@ -124,6 +124,7 @@ void ConnectionManager::tcp_server_worker() {
             std::string err = parse(v, json);
 
             picojson::object response;
+            bool close_socket = false;
 
             // if there was any error message, debug it
             if (!err.empty()) {
@@ -155,9 +156,8 @@ void ConnectionManager::tcp_server_worker() {
             // check if there was volume tag in message
             debug::println("SERVER | Received:");
             const value::object& obj = v.get<object>();
-            for (value::object::const_iterator i = obj.begin();
-                    i != obj.end();
-                    ++i) {
+            value::object::const_iterator i;
+            for (i = obj.begin(); i != obj.end(); ++i) {
                 debug::println("\t %s: %s", i->first.c_str(), i->second.to_str().c_str());
 
                 if (i->first == "volume") {
@@ -189,14 +189,28 @@ void ConnectionManager::tcp_server_worker() {
                         client.printf("%s\n", value(response).serialize().c_str());
                     }
                 }
+
+                if (i->first == "close_socket" && i->second.get<bool>()) {
+                    close_socket = true;
+                }
             }
 
-            client.stop();
-            --clients_connected;
-            if (connected_hosts_changed != nullptr) {
-                connected_hosts_changed(clients_connected);
+            if (close_socket) {
+                debug::println("\t Disconnect client");
+                strcpy(buffer, "Closing socket.");
+                response["message"] = value(buffer);
+                response["success"] = value(true);
+                client.printf("%s\n", value(response).serialize().c_str());
+                client.flush();
+                client.stop();
+                --clients_connected;
+                if (connected_hosts_changed != nullptr) {
+                    connected_hosts_changed(clients_connected);
+                }
+                lastClient = IPAddress(0, 0, 0, 0);
             }
-            lastClient = IPAddress(0, 0, 0, 0);
+
+
 
         } else {
             // if no client is yet connected, check for a new connection
