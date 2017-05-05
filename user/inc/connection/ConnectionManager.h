@@ -25,7 +25,7 @@ class ConnectionManager {
 
 	uint8_callback led_brightness_arrived;
 	uint8_callback hifi_volume_arrived;
-	uint8_callback connected_hosts_changed;
+	uint8_callback change_channel_callback;
 
 	uint8_t clients_connected;
 
@@ -41,7 +41,7 @@ public:
 
 	void getIpAddress(char* address);
 
-	void setHostsChangedCallback(uint8_callback connected_hosts_changed);
+	void setChangeChannelCallback(uint8_callback change_channel_callback);
 
 	void setHifiVolumeArrivedCallback(uint8_callback hifi_volume_arrived);
 
@@ -52,6 +52,17 @@ public:
 private:
 	
 	void tcp_server_worker(void);
+	
+	template<typename T>
+	void send_ack(const char* message, T new_value, TCPClient& client);
+	
+	void send_nack(const char* message, TCPClient& client);
+	
+	template<typename T>
+	
+	T parse_message(TCPClient& client, bool* success);
+	
+	
 };
 
 

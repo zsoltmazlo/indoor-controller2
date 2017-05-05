@@ -9,6 +9,9 @@
 #include <cstdio>
 #include <stdarg.h>
 #include "spark_wiring_usartserial.h"
+#include "spark_wiring_usbserial.h"
+
+#define STREAM Serial
 
 static char* construct_message(const char* fmt, va_list args) {
     static char _buffer[1024];
@@ -18,17 +21,17 @@ static char* construct_message(const char* fmt, va_list args) {
 }
 
 void debug::init(uint32_t baud_rate) {
-    Serial1.begin(baud_rate);
+    STREAM.begin(baud_rate);
 }
 
 void debug::print(const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
-    Serial1.print(construct_message(fmt, args));
+    STREAM.print(construct_message(fmt, args));
 }
 
 void debug::println(const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
-    Serial1.println(construct_message(fmt, args));
+    STREAM.println(construct_message(fmt, args));
 }

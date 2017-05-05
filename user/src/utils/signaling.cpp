@@ -40,15 +40,6 @@ static void __signaling_thread_worker(void) {
         }
 
         brightness = (_signaling_pattern_brightness & mask) >> ((15 - masker) * 4);
-        Serial.print((uint32_t) (_signaling_pattern_brightness >> 32), HEX);
-        Serial.print((uint32_t) _signaling_pattern_brightness, HEX);
-        Serial.print(" & ");
-        Serial.print((uint32_t) (mask >> 32), HEX);
-        Serial.print((uint32_t) mask, HEX);
-        Serial.print(" = ");
-        Serial.print(brightness, HEX);
-        Serial.print(" cntr: ");
-        Serial.println(cntr);
         r = ((_signaling_pattern_red & (1 << cntr)) > 0) * 255;
         g = ((_signaling_pattern_green & (1 << cntr)) > 0) * 255;
         b = ((_signaling_pattern_blue & (1 << cntr)) > 0) * 255;

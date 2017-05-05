@@ -42,8 +42,6 @@ void Display::showApplicationUi(char* address, uint16_t port) {
     tft->printf("IP: %s", address);
     tft->setCursor(3, 110);
     tft->printf("port: %u", port);
-    tft->setCursor(3, 118);
-    tft->print("connected: 0");
 }
 
 void Display::setConnectedHosts(uint8_t new_connected) {

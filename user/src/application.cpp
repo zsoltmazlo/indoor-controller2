@@ -8,17 +8,19 @@
 
 #include "display/Adafruit_GFX.h"
 #include "display/Adafruit_ST7735.h"
-#include "include/wiced_utilities.h"
 #include "display/Display.h"
 #include "utils/debug.h"
 #include "connection/ConnectionManager.h"
+#include "utils/irtransceiver.h"
+#include "spark_wiring_usartserial.h"
 
 PRODUCT_ID(PLATFORM_ID);
 PRODUCT_VERSION(3);
 SYSTEM_THREAD(ENABLED);
 SYSTEM_MODE(MANUAL);
 
-STARTUP(WiFi.selectAntenna(ANT_EXTERNAL));
+//STARTUP(WiFi.selectAntenna(ANT_EXTERNAL));
+STARTUP(WiFi.selectAntenna(ANT_INTERNAL));
 
 #define TFT_CS      A2
 #define TFT_RST     D6
@@ -42,11 +44,16 @@ void set_hifi_volume(uint8_t volume) {
     display.setHifiVolume(volume);
 }
 
+void change_channel(uint8_t channel) {
+    debug::println("MAIN | Change TV to channel: %d", channel);
+    change_to_channel(channel);
+}
+
 void application_task_worker(void) {
 
     debug::println("APP | Thread started.");
 
-    uint16_t potm, potm_prev;
+    uint16_t potm, potm_prev = 0;
 
     // initialize values
     set_led_brightness(50);
@@ -81,6 +88,7 @@ void setup() {
     display.init();
     connManager.init();
     debug::init(9600);
+    Serial1.begin(9600);
 
     char address[20];
     connManager.getMACAddress(address);
@@ -111,8 +119,8 @@ void setup() {
     connManager.startTcpServer(3300);
 
     // set callbacks
-    connManager.setHostsChangedCallback(
-            std::bind(&Display::setConnectedHosts, &display, std::placeholders::_1));
+    connManager.setChangeChannelCallback(
+            std::bind(&change_channel, std::placeholders::_1));
     connManager.setHifiVolumeArrivedCallback(
             std::bind(&set_hifi_volume, std::placeholders::_1));
     connManager.setLedBrightnessArrivedCallback(
