@@ -72,7 +72,7 @@ static void __signaling_thread_worker(void) {
     }
 }
 
-void signaling::set_state(STATES state, bool show_previous_pattern) {
+void signaling::set_state(States state, bool show_previous_pattern) {
     uint8_t* holder_to_write_red;
     uint8_t* holder_to_write_green;
     uint8_t* holder_to_write_blue;
@@ -98,8 +98,28 @@ void signaling::set_state(STATES state, bool show_previous_pattern) {
             *holder_to_write_blue = 0;
             break;
 
+        case VOLUME:
+            _signaling_pattern_brightness = 0xFFFFFFFFFFFFFFFF;
+            *holder_to_write_red = 0;
+            *holder_to_write_green = 0;
+            *holder_to_write_blue = 0xFF;
+            break;
+            
+        case LED_CHANGED:
+            _signaling_pattern_brightness = 0x00FF00FF00FF00FF;
+            *holder_to_write_red = 0;
+            *holder_to_write_green = 0xFF;
+            *holder_to_write_blue = 0;
+            break;
+            
+        case CHANNEL_CHANGED:
+            _signaling_pattern_brightness = 0xFFFFFFFFFFFFFFFF;
+            *holder_to_write_red = 0;
+            *holder_to_write_green = 0xFF;
+            *holder_to_write_blue = 0;
+            break;
+
         case IDLE:
-            //            _signaling_pattern_brightness = 0xFFBF7F3F003F7FBF;
             _signaling_pattern_brightness = 0xFDB9753112579BDF;
             *holder_to_write_red = 0xFF;
             *holder_to_write_green = 0xFF;

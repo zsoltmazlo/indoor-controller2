@@ -17,16 +17,19 @@
 #include <stdint.h>
 
 namespace signaling {
-	
-	enum STATES {
-		INIT,
-		IDLE
-	};
-	
-	void set_state(STATES state, bool show_previous_pattern = false);
 
-	void start_thread(uint8_t priority);
-	
+typedef enum {
+	INIT,
+	IDLE,
+	VOLUME,
+	LED_CHANGED,
+	CHANNEL_CHANGED
+} States;
+
+void set_state(States state, bool show_previous_pattern = false);
+
+void start_thread(uint8_t priority);
+
 }
 
 

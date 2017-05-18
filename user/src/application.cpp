@@ -25,7 +25,8 @@ STARTUP(WiFi.selectAntenna(ANT_INTERNAL));
 #define TFT_CS      A2
 #define TFT_RST     D6
 #define TFT_DC      D5
-#define POTMETER    A1
+#define LED_POTM    A1
+#define HIFI_POTM   A0
 #define LED_STRIP   D1
 
 Display display = Display(TFT_CS, TFT_DC, TFT_RST);
@@ -39,6 +40,7 @@ connection::ConnectionManager connManager;
 #define DISPLAY_KEY_CH 4
 
 void set_led_brightness(const connection::MessageData& data) {
+    signaling::set_state(signaling::LED_CHANGED);
     uint8_t brightness = (uint8_t) data.d;
     debug::println("MAIN | Setting up LED brightness: %u", brightness);
     uint8_t width = map(brightness, 0, 100, 0, 255);
@@ -53,17 +55,48 @@ void set_hifi_volume(const connection::MessageData& data) {
 }
 
 void change_channel(const connection::MessageData& data) {
+    signaling::set_state(signaling::CHANNEL_CHANGED);
     uint8_t channel = (uint8_t) data.d;
     debug::println("MAIN | Change TV to channel: %d", channel);
     change_to_channel(channel);
     display.updateItem(DISPLAY_KEY_CH, channel);
 }
 
+uint8_t hifi_req_volume = 0;
+
+void volume_task_worker(void) {
+    uint8_t hifi_current_vol = 0;
+
+    // first, we have to zero the volume down
+    for (uint8_t i = 0; i < 30; ++i) {
+        send_ir_command(SAMSUNG_VOLU_D);
+        delay(300);
+    }
+
+    while (1) {
+
+        if (hifi_current_vol != hifi_req_volume) {
+            signaling::set_state(signaling::VOLUME);
+
+            if (hifi_current_vol > hifi_req_volume) {
+                send_ir_command(SAMSUNG_VOLU_D);
+                --hifi_current_vol;
+            } else {
+                send_ir_command(SAMSUNG_VOLU_U);
+                ++hifi_current_vol;
+            }
+        }
+
+        delay(300);
+
+    }
+}
+
 void application_task_worker(void) {
 
     debug::println("APP | Thread started.");
 
-    uint16_t potm, potm_prev = 0;
+    uint16_t potm, led_potm_prev = 0, hifi_potm_prev = 0;
 
     while (1) {
 
@@ -76,17 +109,35 @@ void application_task_worker(void) {
         // per unit.
         // 
         // therefore the measurement threshold is 40*0.8mV = 32mV
-        potm = analogRead(POTMETER);
+        potm = analogRead(LED_POTM);
 
-        if (abs((potm_prev - potm)) > 20) {
+        if (abs((led_potm_prev - potm)) > 20) {
             uint8_t width = map(potm, 35, 4080, 0, 100);
-            debug::println("APP | potmeter: %d", potm);
+            debug::println("APP | led potmeter: %d", potm);
             analogWrite(LED_STRIP, (uint8_t) (width * 2.55f));
             display.updateItem(DISPLAY_KEY_LED, width);
             debug::println("APP | Setting up LED brightness: %u", width);
         }
-        potm_prev = potm;
+        led_potm_prev = potm;
 
+        // now for the HIFI volume too
+        potm = analogRead(HIFI_POTM);
+
+        if (abs((hifi_potm_prev - potm)) > 20) {
+            // there is a small offset of the potmeter, therefore we have to
+            // adjust it
+            uint8_t volume = map(potm, 0, 4080, 0, 30);
+
+            if (hifi_req_volume != volume) {
+                debug::println("APP | hifi potmeter: %d", potm);
+                display.updateItem(DISPLAY_KEY_HIFI, volume);
+                debug::println("APP | Setting up HiFi volume: %u", volume);
+                hifi_req_volume = volume;
+            }
+
+        }
+
+        hifi_potm_prev = potm;
         delay(40);
     }
 }
@@ -138,16 +189,17 @@ void setup() {
     display.clear();
     // Properties order: font size, NL/SL, color, x, y, offset, postfix
     display.addItem(DISPLAY_KEY_LED, "LED brightness",{4, ItemProperties::NEW_LINE, ST7735_YELLOW, 3, 0, 20, "%"});
-    display.addItem(DISPLAY_KEY_HIFI, "Sound system volume",{4, ItemProperties::NEW_LINE, ST7735_GREEN, 3, 50, 20, "%"});
-    display.addItem(DISPLAY_KEY_IP, "IP:  ",{1, ItemProperties::SAME_LINE, ST7735_BLUE, 3, 100, 6, ""});
-    display.addItem(DISPLAY_KEY_PORT, "port:",{1, ItemProperties::SAME_LINE, ST7735_BLUE, 3, 110, 6, ""});
-    display.addItem(DISPLAY_KEY_CH, "Last channel:",{1, ItemProperties::SAME_LINE, ST7735_BLUE, 3, 120, 6, ""});
+    display.addItem(DISPLAY_KEY_HIFI, "Sound system volume",{4, ItemProperties::NEW_LINE, ST7735_GREEN, 3, 50, 35, " "});
+    display.addItem(DISPLAY_KEY_IP, "IP:  ",{1, ItemProperties::SAME_LINE, ST7735_BLUE, 3, 100, 6, " "});
+    display.addItem(DISPLAY_KEY_PORT, "port:",{1, ItemProperties::SAME_LINE, ST7735_BLUE, 3, 110, 6, " "});
+    display.addItem(DISPLAY_KEY_CH, "Last channel:",{1, ItemProperties::SAME_LINE, ST7735_BLUE, 3, 120, 6, " "});
 
     display.updateItem(DISPLAY_KEY_IP, address);
     display.updateItem(DISPLAY_KEY_PORT, 3300);
     display.updateItem(DISPLAY_KEY_HIFI, 20);
 
     Thread("application", &application_task_worker, 9);
+    Thread("volume", &volume_task_worker, 5);
 }
 
 void loop() {

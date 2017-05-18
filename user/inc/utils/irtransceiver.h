@@ -35,6 +35,10 @@
 #define SAMSUNG_RETURN  0x580707
 #define SAMSUNG_ACCEPT  0x680707
 
+#define LG_VOL_U 0x171010
+#define LG_VOL_D 0x161010
+#define LG_POWER 0xE91E10
+
 void change_to_channel(int channel);
 
 void send_ir_command(long command);
