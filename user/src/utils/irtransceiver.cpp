@@ -36,11 +36,9 @@ void change_to_channel(int channel) {
     }
 
     for(uint8_t i=0; i<3; ++i) {
-        debug::print("%d", _numbers[i]);
         send_ir_command(_commands[_numbers[i]]);
         delay(200);
     }
-    debug::println(" - accept");
     send_ir_command(SAMSUNG_ACCEPT);
    
 }

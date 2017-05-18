@@ -972,19 +972,22 @@
         </df>
       </df>
       <df name="user">
-        <df name="inc">
-          <df name="display">
-            <in>Display.h</in>
-          </df>
-        </df>
         <df name="src">
+          <df name="connection">
+            <in>ConnectionManager.cpp</in>
+          </df>
           <df name="display">
             <in>Adafruit_GFX.cpp</in>
             <in>Adafruit_ST7735.cpp</in>
+            <in>Display.cpp</in>
             <in>glcdfont.c</in>
           </df>
+          <df name="utils">
+            <in>debug.cpp</in>
+            <in>irtransceiver.cpp</in>
+            <in>signaling.cpp</in>
+          </df>
           <in>application.cpp</in>
-          <in>debug.cpp</in>
         </df>
         <df name="tests">
           <df name="accept">
@@ -1331,6 +1334,7 @@
           <cleanCommand>${MAKE} -f makefile clean PARTICLE_DEVELOP=1 PLATFORM=photon USE_SWD_JTAG=n MODULAR=n</cleanCommand>
           <executablePath></executablePath>
           <cTool>
+            <standard>10</standard>
             <preprocessorList>
               <Elem>MODULE_DEPENDENCY=0,0,0</Elem>
               <Elem>MODULE_FUNCTION=3</Elem>
@@ -1352,6 +1356,7 @@
             </preprocessorList>
           </cTool>
           <ccTool>
+            <standard>8</standard>
             <preprocessorList>
               <Elem>MODULE_DEPENDENCY=0,0,0</Elem>
               <Elem>MODULE_FUNCTION=3</Elem>
@@ -6558,13 +6563,14 @@
         <ccTool flags="1">
         </ccTool>
       </item>
-      <item path="user/inc/display/Display.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="user/src/application.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="1">
         </ccTool>
       </item>
-      <item path="user/src/debug.cpp" ex="false" tool="1" flavor2="8">
+      <item path="user/src/connection/ConnectionManager.cpp"
+            ex="false"
+            tool="1"
+            flavor2="8">
         <ccTool flags="1">
         </ccTool>
       </item>
@@ -6579,9 +6585,25 @@
         <ccTool flags="1">
         </ccTool>
       </item>
+      <item path="user/src/display/Display.cpp" ex="false" tool="1" flavor2="8">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
       <item path="user/src/display/glcdfont.c" ex="false" tool="0" flavor2="3">
         <cTool flags="3">
         </cTool>
+      </item>
+      <item path="user/src/utils/debug.cpp" ex="false" tool="1" flavor2="8">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="user/src/utils/irtransceiver.cpp" ex="false" tool="1" flavor2="8">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="user/src/utils/signaling.cpp" ex="false" tool="1" flavor2="8">
+        <ccTool flags="1">
+        </ccTool>
       </item>
       <item path="user/tests/accept/features/cloud/cloudtest.cpp"
             ex="false"

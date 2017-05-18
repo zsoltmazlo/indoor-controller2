@@ -14,21 +14,18 @@
 
 using namespace picojson;
 
-ConnectionManager::ConnectionManager() {
-    led_brightness_arrived = nullptr;
-    hifi_volume_arrived = nullptr;
-    change_channel_callback = nullptr;
-    clients_connected = 0;
+connection::ConnectionManager::ConnectionManager() {
+    
 }
 
-void ConnectionManager::init() {
+void connection::ConnectionManager::init() {
     spark::WiFi.on();
 
     // no need for password, home WiFi network satefy is MAC address based
     spark::WiFi.setCredentials("lsmx49");
 }
 
-void ConnectionManager::connectToNetwork() {
+void connection::ConnectionManager::connectToNetwork() {
     spark::WiFi.on();
     spark::WiFi.connect();
 
@@ -42,7 +39,7 @@ void ConnectionManager::connectToNetwork() {
     debug::println("CONN | Wifi status: %d", spark::WiFi.ready());
 }
 
-void ConnectionManager::getIpAddress(char* address) {
+void connection::ConnectionManager::getIpAddress(char* address) {
     IPAddress ip = spark::WiFi.localIP();
 
     // need to call directly Particle process to get really addres...
@@ -51,7 +48,7 @@ void ConnectionManager::getIpAddress(char* address) {
     sprintf(address, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
 }
 
-void ConnectionManager::getMACAddress(char* address) {
+void connection::ConnectionManager::getMACAddress(char* address) {
     uint8_t mac[6];
     spark::WiFi.macAddress(mac);
 
@@ -62,25 +59,17 @@ void ConnectionManager::getMACAddress(char* address) {
             mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 }
 
-void ConnectionManager::setChangeChannelCallback(uint8_callback change_channel_callback) {
-    this->change_channel_callback = change_channel_callback;
+void connection::ConnectionManager::addMessageHandler(const MessageHandler& handler) {
+    handlers.push_back(handler);
 }
 
-void ConnectionManager::setHifiVolumeArrivedCallback(uint8_callback hifi_volume_arrived) {
-    this->hifi_volume_arrived = hifi_volume_arrived;
-}
-
-void ConnectionManager::setLedBrightnessArrivedCallback(uint8_callback led_brightness_arrived) {
-    this->led_brightness_arrived = led_brightness_arrived;
-}
-
-void ConnectionManager::startTcpServer(uint16_t port) {
-    server = new TCPServer(port);
+void connection::ConnectionManager::startTcpServer(uint16_t port) {
+    server = std::make_shared<TCPServer>(port);
     server->begin();
-    Thread("server", std::bind(&ConnectionManager::tcp_server_worker, this), 9);
+    Thread("server", std::bind(&connection::ConnectionManager::tcp_server_worker, this), 9);
 }
 
-void ConnectionManager::send_nack(const char* message, TCPClient& client) {
+void connection::ConnectionManager::send_nack(const char* message, TCPClient& client) {
     picojson::object response;
     response["message"] = value(message);
     response["success"] = value(false);
@@ -88,46 +77,50 @@ void ConnectionManager::send_nack(const char* message, TCPClient& client) {
     client.flush();
 }
 
-template<typename T>
-void ConnectionManager::send_ack(const char* message, T new_value, TCPClient& client) {
-    picojson::object response;
-    response["message"] = value(message);
-    response["success"] = value(true);
-    response["new_value"] = value((T) new_value);
-    client.printf("%s\n", value(response).serialize().c_str());
-    client.flush();
-}
+namespace connection {
 
-template<>
-value ConnectionManager::parse_message(TCPClient& client, bool* success) {
-    char buffer[1024];
-    // then receive message
-    memset(buffer, 0, sizeof (buffer));
-    int i = 0;
-    while (client.available()) {
-        buffer[i++] = (char) client.read();
+    template<typename T>
+    void ConnectionManager::send_ack(const char* message, T new_value, TCPClient& client) {
+        picojson::object response;
+        response["message"] = picojson::value(message);
+        response["success"] = picojson::value(true);
+        response["new_value"] = picojson::value(new_value);
+        client.printf("%s\n", picojson::value(response).serialize().c_str());
+        client.flush();
     }
 
-    debug::println("SERVER | Raw message: %s", buffer);
+    template<>
+    picojson::value ConnectionManager::parse_message(TCPClient& client, bool* success) {
+        char buffer[1024];
+        // then receive message
+        memset(buffer, 0, sizeof (buffer));
+        int i = 0;
+        while (client.available()) {
+            buffer[i++] = (char) client.read();
+        }
 
-    // interpret message
-    std::string json(buffer);
-    value v;
-    std::string err = parse(v, json);
+        debug::println("SERVER | Raw message: %s", buffer);
 
-    // if there was any error message, debug it
-    if (!err.empty()) {
-        sprintf(buffer, "Error occur during receiving JSON: %s", err.c_str());
-        debug::println("SERVER | %s", buffer);
-        send_nack(buffer, client);
-        *success = false;
+        // interpret message
+        std::string json(buffer);
+        value v;
+        std::string err = parse(v, json);
+
+        // if there was any error message, debug it
+        if (!err.empty()) {
+            sprintf(buffer, "Error occur during receiving JSON: %s", err.c_str());
+            debug::println("SERVER | %s", buffer);
+            send_nack(buffer, client);
+            *success = false;
+        }
+
+        *success = true;
+        return v;
     }
 
-    *success = true;
-    return v;
-}
+};
 
-void ConnectionManager::tcp_server_worker() {
+void connection::ConnectionManager::tcp_server_worker() {
 
     debug::println("SERVER | Thread started.");
 
@@ -160,49 +153,36 @@ void ConnectionManager::tcp_server_worker() {
                 continue;
             }
 
-            /**
-             * if (i->first == "volume") {
-                    uint8_t vol = (uint8_t) i->second.get<double>();
-                    if (hifi_volume_arrived != nullptr) {
-                        debug::println("\t Setting up volume: %d", vol);
-                        hifi_volume_arrived(vol);
-                        send_ack("Volume changed.", (double) vol, client);
-                    }
-                }
-             */
-            auto message_handler = [this, &client](
-                    uint8_callback& cb,
-                    std::pair<const std::string, picojson::value>& i,
-                    const char* field,
-                    const char* message) {
-                if (i.first == field) {
-                    uint8_t vol = (uint8_t) i.second.get<double>();
-                    if (cb != nullptr) {
-                        cb(vol);
-                        debug::println("\t %s New value: %d", message, vol);
-                        send_ack(message, (double) vol, client);
-                    }
-                }
-            };
-
-
-            // check if there was volume tag in message
+            // check all message handler
             debug::println("SERVER | Received:");
             const value::object& message = json_message.get<object>();
             for (auto field : message) {
 
-                debug::println("\t %s: %s", field.first.c_str(), field.second.to_str().c_str());
-                message_handler(hifi_volume_arrived, field, "volume", "Volume changed.");
-                message_handler(led_brightness_arrived, field, "led", "LED Brightness changed.");
-                message_handler(change_channel_callback, field, "tvchannel", "TV channel changed.");
-
+                debug::println("         %s: %s", field.first.c_str(), field.second.to_str().c_str());
                 if (field.first == "close_socket" && field.second.get<bool>()) {
                     close_socket = true;
+                    continue;
+                }
+
+                // all message handler will test if need to be called
+                for (auto handler : handlers) {
+                    if (handler.checkField(field.first)) {
+                        MessageData data;
+                        if (field.second.is<double>()) {
+                            data.d = field.second.get<double>();
+                            send_ack("Message processed.", field.second.get<double>(), client);
+                        }
+                        if (field.second.is<bool>()) {
+                            data.b = field.second.get<bool>();
+                            send_ack("Message processed.", field.second.get<bool>(), client);
+                        }
+                        handler.callback(data);
+                    }
                 }
             }
 
             if (close_socket) {
-                debug::println("\t Disconnect client");
+                debug::println("         Disconnect client");
                 send_ack<const char*>("Closing socket.", "disconnected", client);
                 client.flush();
                 client.stop();

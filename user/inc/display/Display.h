@@ -11,45 +11,61 @@
  * Created on February 4, 2017, 10:06 PM
  */
 
-#ifndef DISPLAY_H
-#define DISPLAY_H
+#pragma once
 
 #include "Adafruit_ST7735.h"
+#include <memory>
+#include <map>
+#include <string>
+
+struct ItemProperties {
+
+	enum Align {
+		NEW_LINE,
+		SAME_LINE
+	};
+
+	uint8_t font_size;
+	uint8_t align;
+
+	uint16_t color, x, y, offset;
+	
+	std::string postfix;
+
+};
 
 class Display {
-	Adafruit_ST7735* tft;
+	std::shared_ptr<Adafruit_ST7735> tft;
+	std::map<int, ItemProperties> items;
 
 public:
 
 	Display(uint8_t cs, uint8_t dc, uint8_t rst);
 
 	void init();
-	
-	void showApplicationUi(char* address, uint16_t port);
 
-	void setLedPulseWidth(uint8_t new_led_pulse_width);
+	void addItem(int key, const char* label, ItemProperties properties);
 
-	void setHifiVolume(uint8_t new_volume);
+	template<typename T>
+	void updateItem(int key, T value) {
+		auto props = items[key];
+		// clear the whole row for the new item
+		tft->fillRect(props.x + props.offset, props.y, 128 - props.x + props.offset, props.font_size * 10, ST7735_BLACK);
+		tft->setCursor(props.x + props.offset, props.y);
+		tft->setTextColor(props.color);
+		tft->setTextSize(props.font_size);
+		tft->print(value);
+		tft->print(props.postfix.c_str());
+	}
+	
+	void clear() {
+		tft->clear();
+	}
 
-	void setConnectedHosts(uint8_t new_connected);
-	
-	void setCursor(uint8_t x, uint8_t y);
-	
 	void print(const char* fmt, ...);
-	
+
 	void println(const char* fmt, ...);
 
-
-private:
-
-	uint8_t _led_pulse_width;
-
-	uint8_t _hifi_volume;
-
-	uint8_t _connected_devices;
 };
 
-
-
-#endif /* DISPLAY_H */
 

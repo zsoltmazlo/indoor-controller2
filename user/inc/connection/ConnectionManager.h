@@ -11,23 +11,51 @@
  * Created on February 4, 2017, 10:58 PM
  */
 
-#ifndef CONNECTIONMANAGER_H
-#define CONNECTIONMANAGER_H
+#pragma once
 
 #include <stdint.h>
 #include <functional>
 #include "spark_wiring_tcpserver.h"
+#include <string>
+#include <list>
+#include <memory>
 
 typedef std::function<void(uint8_t) > uint8_callback;
 
+namespace connection {
+
+union MessageData {
+	int i;
+	float f;
+	long l;
+	double d;
+	bool b;
+};
+
+using message_callback = std::function<void(const MessageData&) >;
+
+class MessageHandler {
+	
+public:
+
+	message_callback callback;
+	
+	std::string applyOnField;
+	
+	MessageHandler(const char* field, message_callback cb): callback(cb), applyOnField(field) {
+		
+	}
+	
+	bool checkField(std::string field) {
+		return applyOnField.compare(field) == 0;
+	}
+
+};
+
 class ConnectionManager {
-	TCPServer* server;
+	std::shared_ptr<TCPServer> server;
 
-	uint8_callback led_brightness_arrived;
-	uint8_callback hifi_volume_arrived;
-	uint8_callback change_channel_callback;
-
-	uint8_t clients_connected;
+	std::list<MessageHandler> handlers;
 
 public:
 
@@ -40,32 +68,26 @@ public:
 	void getMACAddress(char* address);
 
 	void getIpAddress(char* address);
-
-	void setChangeChannelCallback(uint8_callback change_channel_callback);
-
-	void setHifiVolumeArrivedCallback(uint8_callback hifi_volume_arrived);
-
-	void setLedBrightnessArrivedCallback(uint8_callback led_brightness_arrived);
+	
+	void addMessageHandler(const MessageHandler& handler);
 
 	void startTcpServer(uint16_t port);
 
 private:
-	
+
 	void tcp_server_worker(void);
-	
+
 	template<typename T>
 	void send_ack(const char* message, T new_value, TCPClient& client);
-	
+
 	void send_nack(const char* message, TCPClient& client);
-	
+
 	template<typename T>
-	
 	T parse_message(TCPClient& client, bool* success);
-	
-	
+
+
+
 };
 
-
-
-#endif /* CONNECTIONMANAGER_H */
+}
 

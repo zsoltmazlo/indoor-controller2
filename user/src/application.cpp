@@ -30,23 +30,33 @@ STARTUP(WiFi.selectAntenna(ANT_INTERNAL));
 
 Display display = Display(TFT_CS, TFT_DC, TFT_RST);
 
-ConnectionManager connManager;
+connection::ConnectionManager connManager;
 
-void set_led_brightness(uint8_t brightness) {
+#define DISPLAY_KEY_LED 0
+#define DISPLAY_KEY_HIFI 1
+#define DISPLAY_KEY_IP 2
+#define DISPLAY_KEY_PORT 3
+#define DISPLAY_KEY_CH 4
+
+void set_led_brightness(const connection::MessageData& data) {
+    uint8_t brightness = (uint8_t) data.d;
     debug::println("MAIN | Setting up LED brightness: %u", brightness);
     uint8_t width = map(brightness, 0, 100, 0, 255);
     analogWrite(LED_STRIP, width);
-    display.setLedPulseWidth(brightness);
+    display.updateItem(DISPLAY_KEY_LED, brightness);
 }
 
-void set_hifi_volume(uint8_t volume) {
+void set_hifi_volume(const connection::MessageData& data) {
+    uint8_t volume = (uint8_t) data.d;
     debug::println("MAIN | Setting up HiFi volume: %u", volume);
-    display.setHifiVolume(volume);
+    display.updateItem(DISPLAY_KEY_HIFI, volume);
 }
 
-void change_channel(uint8_t channel) {
+void change_channel(const connection::MessageData& data) {
+    uint8_t channel = (uint8_t) data.d;
     debug::println("MAIN | Change TV to channel: %d", channel);
     change_to_channel(channel);
+    display.updateItem(DISPLAY_KEY_CH, channel);
 }
 
 void application_task_worker(void) {
@@ -54,10 +64,6 @@ void application_task_worker(void) {
     debug::println("APP | Thread started.");
 
     uint16_t potm, potm_prev = 0;
-
-    // initialize values
-    set_led_brightness(50);
-    set_hifi_volume(0);
 
     while (1) {
 
@@ -73,9 +79,10 @@ void application_task_worker(void) {
         potm = analogRead(POTMETER);
 
         if (abs((potm_prev - potm)) > 20) {
-            uint8_t width = map(potm, 0, 4080, 0, 100);
-            analogWrite(LED_STRIP, potm >> 4);
-            display.setLedPulseWidth(width);
+            uint8_t width = map(potm, 35, 4080, 0, 100);
+            debug::println("APP | potmeter: %d", potm);
+            analogWrite(LED_STRIP, (uint8_t) (width * 2.55f));
+            display.updateItem(DISPLAY_KEY_LED, width);
             debug::println("APP | Setting up LED brightness: %u", width);
         }
         potm_prev = potm;
@@ -105,6 +112,7 @@ void setup() {
     signaling::set_state(signaling::INIT);
     signaling::start_thread(4);
 
+    // STAGE TWO: establish connection
     display.print("Connecting...");
 
     connManager.connectToNetwork();
@@ -118,18 +126,27 @@ void setup() {
 
     connManager.startTcpServer(3300);
 
-    // set callbacks
-    connManager.setChangeChannelCallback(
-            std::bind(&change_channel, std::placeholders::_1));
-    connManager.setHifiVolumeArrivedCallback(
-            std::bind(&set_hifi_volume, std::placeholders::_1));
-    connManager.setLedBrightnessArrivedCallback(
-            std::bind(&set_led_brightness, std::placeholders::_1));
+    // STAGE THREE: set callbacks
+    connManager.addMessageHandler({"volume", &set_hifi_volume});
+    connManager.addMessageHandler({"led", &set_led_brightness});
+    connManager.addMessageHandler({"tvchannel", &change_channel});
 
-    // create application task for setting highest priority for it
+    // STAGE FOUR: create application task for setting highest priority for it
     display.println("Starting app...");
     delay(2000);
-    display.showApplicationUi(address, 3300);
+
+    display.clear();
+    // Properties order: font size, NL/SL, color, x, y, offset, postfix
+    display.addItem(DISPLAY_KEY_LED, "LED brightness",{4, ItemProperties::NEW_LINE, ST7735_YELLOW, 3, 0, 20, "%"});
+    display.addItem(DISPLAY_KEY_HIFI, "Sound system volume",{4, ItemProperties::NEW_LINE, ST7735_GREEN, 3, 50, 20, "%"});
+    display.addItem(DISPLAY_KEY_IP, "IP:  ",{1, ItemProperties::SAME_LINE, ST7735_BLUE, 3, 100, 6, ""});
+    display.addItem(DISPLAY_KEY_PORT, "port:",{1, ItemProperties::SAME_LINE, ST7735_BLUE, 3, 110, 6, ""});
+    display.addItem(DISPLAY_KEY_CH, "Last channel:",{1, ItemProperties::SAME_LINE, ST7735_BLUE, 3, 120, 6, ""});
+
+    display.updateItem(DISPLAY_KEY_IP, address);
+    display.updateItem(DISPLAY_KEY_PORT, 3300);
+    display.updateItem(DISPLAY_KEY_HIFI, 20);
+
     Thread("application", &application_task_worker, 9);
 }
 

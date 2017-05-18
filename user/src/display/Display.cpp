@@ -8,10 +8,7 @@
 #include <stdarg.h>
 
 Display::Display(uint8_t cs, uint8_t dc, uint8_t rst) :
-tft(new Adafruit_ST7735(cs, dc, rst)),
-_connected_devices(-1),
-_hifi_volume(-1),
-_led_pulse_width(-1) {
+tft(new Adafruit_ST7735(cs, dc, rst)) {
 
 }
 
@@ -21,76 +18,30 @@ void Display::init() {
 
 }
 
-void Display::showApplicationUi(char* address, uint16_t port) {
-    tft->clear();
-    // create fix UI
-    tft->setCursor(3, 0);
-    tft->setTextSize(1);
-    tft->setTextColor(ST7735_WHITE);
-    tft->print("LED strip");
-    tft->setCursor(3, 10);
-    tft->print("brightness");
+void Display::addItem(int key, const char* label, ItemProperties properties) {
 
-    tft->setCursor(3, 55);
+    // immediately show on LCD
+    tft->setCursor(properties.x, properties.y);
     tft->setTextSize(1);
-    tft->setTextColor(ST7735_WHITE);
-    tft->print("HiFi volume");
+    tft->setTextColor(properties.color);
+    tft->print(label);
 
-    tft->setTextSize(1);
-    tft->setTextColor(ST7735_WHITE);
-    tft->setCursor(3, 102);
-    tft->printf("IP: %s", address);
-    tft->setCursor(3, 110);
-    tft->printf("port: %u", port);
-}
+    switch (properties.align) {
+        case ItemProperties::NEW_LINE:
+            properties.y += 10;
+            break;
 
-void Display::setConnectedHosts(uint8_t new_connected) {
-    // if it remained the same, do not update it
-    if (new_connected == _connected_devices) {
-        return;
+        case ItemProperties::SAME_LINE:
+            properties.x = tft->getCursorX();
+            break;
     }
 
-    _connected_devices = new_connected;
+    tft->setCursor(properties.x + properties.offset, properties.y);
+    tft->setTextSize(properties.font_size);
+    tft->print("n.a.");
 
-    tft->setTextSize(1);
-    tft->setTextColor(ST7735_WHITE);
-    tft->fillRect(65, 118, 70, 10, ST7735_BLACK);
-    tft->setCursor(65, 118);
-    tft->print(_connected_devices);
-}
 
-void Display::setHifiVolume(uint8_t new_volume) {
-    // if it remained the same, do not update it
-    if (new_volume == _hifi_volume) {
-        return;
-    }
-
-    _hifi_volume = new_volume;
-    tft->fillRect(30, 65, 98, 30, ST7735_BLACK);
-    tft->setCursor(30, 65);
-    tft->setTextSize(4);
-    tft->setTextColor(ST7735_YELLOW);
-    tft->print(_hifi_volume);
-    tft->print("%");
-}
-
-void Display::setLedPulseWidth(uint8_t new_led_pulse_width) {
-    // if it remained the same, do not update screen
-    if (new_led_pulse_width == _led_pulse_width) {
-        return;
-    }
-
-    _led_pulse_width = new_led_pulse_width;
-    tft->fillRect(30, 20, 98, 30, ST7735_BLACK);
-    tft->setCursor(30, 20);
-    tft->setTextSize(4);
-    tft->setTextColor(ST7735_GREEN);
-    tft->print(_led_pulse_width);
-    tft->print("%");
-}
-
-void Display::setCursor(uint8_t x, uint8_t y) {
-    tft->setCursor(x, y);
+    items[key] = properties;
 }
 
 static char* construct_message(const char* fmt, va_list args) {

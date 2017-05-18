@@ -106,20 +106,6 @@
           </df>
         </df>
         <df name="target">
-          <df name="bootloader">
-            <df name="platform-6-lto">
-              <df name="src">
-                <df name="photon">
-                  <df name="stdperiphdriver">
-                  </df>
-                </df>
-                <df name="stm32f2xx">
-                </df>
-              </df>
-              <df name="startup">
-              </df>
-            </df>
-          </df>
           <df name="communication">
             <df name="platform-6-prod-6">
               <df name="lib">
@@ -136,12 +122,6 @@
               </df>
             </df>
           </df>
-          <df name="communication-dynalib">
-            <df name="platform-6-m">
-              <df name="src">
-              </df>
-            </df>
-          </df>
           <df name="hal">
             <df name="platform-6">
               <df name="src">
@@ -151,12 +131,6 @@
                 </df>
                 <df name="stm32f2xx">
                 </df>
-              </df>
-            </df>
-          </df>
-          <df name="hal-dynalib">
-            <df name="platform-6-m">
-              <df name="src">
               </df>
             </df>
           </df>
@@ -197,73 +171,9 @@
                 </df>
               </df>
             </df>
-            <df name="platform-6-lto">
-              <df name="MCU">
-                <df name="shared">
-                  <df name="STM32">
-                    <df name="src">
-                    </df>
-                  </df>
-                </df>
-                <df name="STM32F2xx">
-                  <df name="SPARK_Firmware_Driver">
-                    <df name="src">
-                    </df>
-                  </df>
-                  <df name="STM32_USB_Device_Driver">
-                    <df name="src">
-                    </df>
-                  </df>
-                  <df name="STM32_USB_OTG_Driver">
-                    <df name="src">
-                    </df>
-                  </df>
-                </df>
-              </df>
-            </df>
-            <df name="platform-6-m">
-              <df name="MCU">
-                <df name="shared">
-                  <df name="STM32">
-                    <df name="src">
-                    </df>
-                  </df>
-                </df>
-                <df name="STM32F2xx">
-                  <df name="SPARK_Firmware_Driver">
-                    <df name="src">
-                    </df>
-                  </df>
-                  <df name="STM32_USB_Device_Driver">
-                    <df name="src">
-                    </df>
-                  </df>
-                  <df name="STM32_USB_OTG_Driver">
-                    <df name="src">
-                    </df>
-                  </df>
-                </df>
-              </df>
-            </df>
-          </df>
-          <df name="rt-dynalib">
-            <df name="platform-6-m">
-              <df name="src">
-              </df>
-            </df>
           </df>
           <df name="services">
             <df name="platform-6">
-              <df name="src">
-              </df>
-            </df>
-            <df name="platform-6-lto">
-              <df name="src">
-              </df>
-            </df>
-          </df>
-          <df name="services-dynalib">
-            <df name="arm">
               <df name="src">
               </df>
             </df>
@@ -274,31 +184,17 @@
               </df>
             </df>
           </df>
-          <df name="system-dynalib">
-            <df name="platform-6-m">
-              <df name="src">
-              </df>
-            </df>
-          </df>
           <df name="user">
             <df name="platform-6">
               <df name="src">
                 <df name="src">
+                  <df name="connection">
+                  </df>
                   <df name="display">
                   </df>
+                  <df name="utils">
+                  </df>
                 </df>
-              </df>
-            </df>
-            <df name="platform-6-m">
-              <df name="src">
-                <df name="src">
-                </df>
-              </df>
-            </df>
-          </df>
-          <df name="user-part">
-            <df name="platform-6-m">
-              <df name="src">
               </df>
             </df>
           </df>
@@ -307,17 +203,9 @@
               <df name="src">
               </df>
             </df>
-            <df name="platform-6-m">
-              <df name="src">
-              </df>
-            </df>
           </df>
           <df name="wiring_globals">
             <df name="platform-6">
-              <df name="src">
-              </df>
-            </df>
-            <df name="platform-6-m">
               <df name="src">
               </df>
             </df>
@@ -2409,6 +2297,9 @@
       </df>
       <df name="user">
         <df name="inc">
+          <df name="connection">
+            <in>ConnectionManager.h</in>
+          </df>
           <df name="display">
             <df name="Fonts">
               <in>FreeMono12pt7b.h</in>
@@ -2466,8 +2357,13 @@
             <in>Display.h</in>
             <in>gfxfont.h</in>
           </df>
+          <df name="utils">
+            <in>debug.h</in>
+            <in>irtransceiver.h</in>
+            <in>picojson.h</in>
+            <in>signaling.h</in>
+          </df>
           <in>application.h</in>
-          <in>debug.h</in>
         </df>
         <df name="libraries">
           <df name="Serial2">
@@ -2487,13 +2383,21 @@
           </df>
         </df>
         <df name="src">
+          <df name="connection">
+            <in>ConnectionManager.cpp</in>
+          </df>
           <df name="display">
             <in>Adafruit_GFX.cpp</in>
             <in>Adafruit_ST7735.cpp</in>
+            <in>Display.cpp</in>
             <in>glcdfont.c</in>
           </df>
+          <df name="utils">
+            <in>debug.cpp</in>
+            <in>irtransceiver.cpp</in>
+            <in>signaling.cpp</in>
+          </df>
           <in>application.cpp</in>
-          <in>debug.cpp</in>
         </df>
         <df name="tests">
           <df name="accept">
