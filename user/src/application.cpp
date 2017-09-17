@@ -13,92 +13,105 @@
 #include "connection/ConnectionManager.h"
 #include "utils/irtransceiver.h"
 #include "spark_wiring_usartserial.h"
+#include "spark_wiring_i2c.h"
 
-PRODUCT_ID(PLATFORM_ID);
-PRODUCT_VERSION(3);
-SYSTEM_THREAD(ENABLED);
-SYSTEM_MODE(MANUAL);
+#include <mutex>
 
-//STARTUP(WiFi.selectAntenna(ANT_EXTERNAL));
-STARTUP(WiFi.selectAntenna(ANT_INTERNAL));
+PRODUCT_ID(PLATFORM_ID)
+PRODUCT_VERSION(3)
+SYSTEM_THREAD(ENABLED)
+SYSTEM_MODE(MANUAL)
 
-#define TFT_CS      A2
-#define TFT_RST     D6
-#define TFT_DC      D5
-#define LED_POTM    A1
-#define HIFI_POTM   A0
-#define LED_STRIP   D1
+STARTUP(WiFi.selectAntenna(ANT_EXTERNAL));
+//STARTUP(WiFi.selectAntenna(ANT_INTERNAL))
 
-Display display = Display(TFT_CS, TFT_DC, TFT_RST);
+#define FIRMWARE_VERSION "1.7"
+
+#define TFT_CS      D5
+#define TFT_RST     D7
+#define TFT_DC      D6
+//      TFT_SCK     D4
+//      TFT_MOSI    D2
+#define TFT_BACKL   DAC
+
+#define TFT_BUTTON      TX
+#define LED_POTM1       A0
+#define LED_POTM2       A1
+#define LED_POTM3       A2
+#define LED_STRIP1      WKP
+#define LED_STRIP2      A4
+#define LED_STRIP3      A5
+
+Display display = Display(TFT_CS, TFT_DC, TFT_RST, TFT_BACKL);
 
 connection::ConnectionManager connManager;
 
-#define DISPLAY_KEY_LED 0
-#define DISPLAY_KEY_HIFI 1
-#define DISPLAY_KEY_IP 2
-#define DISPLAY_KEY_PORT 3
-#define DISPLAY_KEY_CH 4
+#define DISPLAY_KEY_LED1 0
+#define DISPLAY_KEY_LED2 1
+#define DISPLAY_KEY_LED3 2
+#define DISPLAY_KEY_IP 3
+#define DISPLAY_KEY_PORT 4
+#define DISPLAY_KEY_CH 5
+#define DISPLAY_KEY_TEMP 6
+#define DISPLAY_KEY_MAC 7
+#define DISPLAY_KEY_VERSION 8
+#define DISPLAY_KEY_BAUD 9
 
-void set_led_brightness(const connection::MessageData& data) {
+
+#define SERIAL_BAUD 9600
+
+std::mutex display_mutex;
+
+void set_led_brightness(uint8_t pin, uint8_t display_key, const utils::Message& data) {
     signaling::set_state(signaling::LED_CHANGED);
-    uint8_t brightness = (uint8_t) data.d;
-    debug::println("MAIN | Setting up LED brightness: %u", brightness);
+    int brightness = data;
+    debug::println("MAIN | Setting up LED brightness%d: %u", display_key - DISPLAY_KEY_LED1 + 1, brightness);
     uint8_t width = map(brightness, 0, 100, 0, 255);
-    analogWrite(LED_STRIP, width);
-    display.updateItem(DISPLAY_KEY_LED, brightness);
-}
-
-void set_hifi_volume(const connection::MessageData& data) {
-    uint8_t volume = (uint8_t) data.d;
-    debug::println("MAIN | Setting up HiFi volume: %u", volume);
-    display.updateItem(DISPLAY_KEY_HIFI, volume);
-}
-
-void change_channel(const connection::MessageData& data) {
-    signaling::set_state(signaling::CHANNEL_CHANGED);
-    uint8_t channel = (uint8_t) data.d;
-    debug::println("MAIN | Change TV to channel: %d", channel);
-    change_to_channel(channel);
-    display.updateItem(DISPLAY_KEY_CH, channel);
-}
-
-uint8_t hifi_req_volume = 0;
-
-void volume_task_worker(void) {
-    uint8_t hifi_current_vol = 0;
-
-    // first, we have to zero the volume down
-    for (uint8_t i = 0; i < 30; ++i) {
-        send_ir_command(SAMSUNG_VOLU_D);
-        delay(300);
-    }
-
-    while (1) {
-
-        if (hifi_current_vol != hifi_req_volume) {
-            signaling::set_state(signaling::VOLUME);
-
-            if (hifi_current_vol > hifi_req_volume) {
-                send_ir_command(SAMSUNG_VOLU_D);
-                --hifi_current_vol;
-            } else {
-                send_ir_command(SAMSUNG_VOLU_U);
-                ++hifi_current_vol;
-            }
-        }
-
-        delay(300);
-
-    }
+    analogWrite(pin, width);
+    display.updateItem(display_key, brightness);
 }
 
 void application_task_worker(void) {
 
     debug::println("APP | Thread started.");
 
-    uint16_t potm, led_potm_prev = 0, hifi_potm_prev = 0;
+    uint16_t led1_prev, led2_prev, led3_prev = 0;
+
+    auto potmeter_check = [](
+            uint8_t potm_pin,
+            uint8_t led_pin,
+            uint8_t display_key,
+            uint16_t * prev_value) {
+        uint16_t potm = analogRead(potm_pin);
+        uint8_t width = map(potm, 35, 4080, 0, 100);
+
+        if (abs((*prev_value - width)) > 1) {
+            debug::println("APP | led potmeter%d: %d", display_key - DISPLAY_KEY_LED1 + 1, potm);
+            set_led_brightness(led_pin, display_key, width);
+            *prev_value = width;
+        }
+    };
+
+    // active low
+    pinMode(TFT_BUTTON, INPUT_PULLUP);
+    Display::DisplayBlacklight backlight = Display::On;
+
+    pinMode(LED_POTM1, INPUT);
+    pinMode(LED_POTM2, INPUT);
+    pinMode(LED_POTM3, INPUT);
 
     while (1) {
+        backlight = digitalRead(TFT_BUTTON) == 0 ? Display::On : Display::Off;
+        display.setBacklight(backlight);
+
+        // if backlight is off, then disable all led at once
+        while (backlight == Display::Off) {
+            set_led_brightness(LED_STRIP1, DISPLAY_KEY_LED1, 0);
+            set_led_brightness(LED_STRIP2, DISPLAY_KEY_LED2, 0);
+            set_led_brightness(LED_STRIP3, DISPLAY_KEY_LED3, 0);
+            backlight = digitalRead(TFT_BUTTON) == 0 ? Display::On : Display::Off;
+        }
+
 
         // measuring potential-meter, and if difference with previous measurement
         // is higher than 20, then set the pulse width too
@@ -109,78 +122,122 @@ void application_task_worker(void) {
         // per unit.
         // 
         // therefore the measurement threshold is 40*0.8mV = 32mV
-        potm = analogRead(LED_POTM);
-
-        if (abs((led_potm_prev - potm)) > 20) {
-            uint8_t width = map(potm, 35, 4080, 0, 100);
-            debug::println("APP | led potmeter: %d", potm);
-            analogWrite(LED_STRIP, (uint8_t) (width * 2.55f));
-            display.updateItem(DISPLAY_KEY_LED, width);
-            debug::println("APP | Setting up LED brightness: %u", width);
+        if (display_mutex.try_lock()) {
+            potmeter_check(LED_POTM1, LED_STRIP1, DISPLAY_KEY_LED1, &led1_prev);
+            potmeter_check(LED_POTM2, LED_STRIP2, DISPLAY_KEY_LED2, &led2_prev);
+            potmeter_check(LED_POTM3, LED_STRIP3, DISPLAY_KEY_LED3, &led3_prev);
+            display_mutex.unlock();
         }
-        led_potm_prev = potm;
-
-        // now for the HIFI volume too
-        potm = analogRead(HIFI_POTM);
-
-        if (abs((hifi_potm_prev - potm)) > 20) {
-            // there is a small offset of the potmeter, therefore we have to
-            // adjust it
-            uint8_t volume = map(potm, 0, 4080, 0, 30);
-
-            if (hifi_req_volume != volume) {
-                debug::println("APP | hifi potmeter: %d", potm);
-                display.updateItem(DISPLAY_KEY_HIFI, volume);
-                debug::println("APP | Setting up HiFi volume: %u", volume);
-                hifi_req_volume = volume;
-            }
-
-        }
-
-        hifi_potm_prev = potm;
-        delay(40);
+        delay(80);
     }
+}
+
+void temperature_read_worker() {
+
+    uint8_t address = 0x40;
+    Wire.begin();
+
+    // Heater off, 14 bit Temperature and Humidity Measurement Resolution 
+    Wire.beginTransmission(address);
+    Wire.write(0x02);
+    Wire.write(0x0);
+    Wire.write(0x0);
+    Wire.endTransmission();
+
+    char _bffr[16];
+    display.enableGraph(0, 66, 320, 100);
+    uint8_t msb, lsb, measurement_count;
+    float temp;
+    measurement_count = 0;
+
+    while (1) {
+
+        // read temperature value
+        Wire.beginTransmission(address);
+        Wire.write(0x00);
+        Wire.endTransmission();
+
+        delay(10);
+        Wire.requestFrom(address, (uint8_t) 2);
+
+        msb = Wire.read();
+        lsb = Wire.read();
+        uint16_t raw = msb << 8 | lsb;
+        temp = raw / pow(2, 16) * 165 - 40;
+
+        // wait here while the display mutex is locked by other process
+        while (display_mutex.try_lock());
+
+        // one hour is elapsed after last measurement, show on graph
+        if (measurement_count == 0) {
+            display.addDataToGraph(temp);
+        }
+
+        ++measurement_count;
+        if (measurement_count == 120) {
+            measurement_count = 0;
+        }
+
+
+        sprintf(_bffr, "%.1fC", temp);
+        display.updateItem(DISPLAY_KEY_TEMP, _bffr);
+        display_mutex.unlock();
+
+        // for 30s this measurement will be fine
+        delay(30000);
+
+    }
+
 }
 
 void setup() {
     display.init();
+    display.setBacklight(Display::On);
     connManager.init();
-    debug::init(9600);
-    Serial1.begin(9600);
+    debug::init(SERIAL_BAUD);
+    //    Serial1.begin(SERIAL_BAUD);
 
     char address[20];
     connManager.getMACAddress(address);
 
+    // enable dfu mode on button click
+    System.on(button_click, [](system_event_t ev, int param) {
+        System.dfu();
+    });
+
 
     // STAGE ONE: initializing
     display.println("Photon started.");
-    display.println("Firmware version:\n   %d", System.versionNumber());
-    display.println("MAC:\n   %s", address);
-    debug::println("MAIN | Photon started.\n\tFirmware version: %d\n\t"
-            "MAC: %s", System.versionNumber(), address);
+    display.println("Firmware version : %s", FIRMWARE_VERSION);
+    display.println("MAC .............: %s", address);
+    debug::println("MAIN | Photon started.\n\tFirmware version: %s\n\t"
+            "MAC: %s", FIRMWARE_VERSION, address);
 
-    pinMode(LED_STRIP, OUTPUT);
+    pinMode(LED_STRIP1, OUTPUT);
+    pinMode(LED_STRIP2, OUTPUT);
+    pinMode(LED_STRIP3, OUTPUT);
     signaling::set_state(signaling::INIT);
     signaling::start_thread(4);
 
     // STAGE TWO: establish connection
-    display.print("Connecting...");
+    display.println("Connecting...");
 
     connManager.connectToNetwork();
-    display.println("done.");
 
     connManager.getIpAddress(address);
-    display.println("IP:\n   %s", address);
     debug::println("MAIN | Connected to network.\n\tIP: %s", address);
+    display.println("IP ..............: %s", address);
+    display.println("done.");
 
     display.println("Starting server...");
 
     connManager.startTcpServer(3300);
 
     // STAGE THREE: set callbacks
-    connManager.addMessageHandler({"volume", &set_hifi_volume});
-    connManager.addMessageHandler({"led", &set_led_brightness});
-    connManager.addMessageHandler({"tvchannel", &change_channel});
+    connManager.addMessageHandler({"led1", std::bind(set_led_brightness, LED_STRIP1, DISPLAY_KEY_LED1, std::placeholders::_1)});
+    connManager.addMessageHandler({"led2", std::bind(set_led_brightness, LED_STRIP2, DISPLAY_KEY_LED2, std::placeholders::_1)});
+    connManager.addMessageHandler({"led3", std::bind(set_led_brightness, LED_STRIP3, DISPLAY_KEY_LED3, std::placeholders::_1)});
+    //    connManager.addMessageHandler({"tvchannel", &change_channel});
 
     // STAGE FOUR: create application task for setting highest priority for it
     display.println("Starting app...");
@@ -188,18 +245,25 @@ void setup() {
 
     display.clear();
     // Properties order: font size, NL/SL, color, x, y, offset, postfix
-    display.addItem(DISPLAY_KEY_LED, "LED brightness",{4, ItemProperties::NEW_LINE, ST7735_YELLOW, 3, 0, 20, "%"});
-    display.addItem(DISPLAY_KEY_HIFI, "Sound system volume",{4, ItemProperties::NEW_LINE, ST7735_GREEN, 3, 50, 35, " "});
-    display.addItem(DISPLAY_KEY_IP, "IP:  ",{1, ItemProperties::SAME_LINE, ST7735_BLUE, 3, 100, 6, " "});
-    display.addItem(DISPLAY_KEY_PORT, "port:",{1, ItemProperties::SAME_LINE, ST7735_BLUE, 3, 110, 6, " "});
-    display.addItem(DISPLAY_KEY_CH, "Last channel:",{1, ItemProperties::SAME_LINE, ST7735_BLUE, 3, 120, 6, " "});
+    display.addItem(DISPLAY_KEY_LED1, "LED1", ItemProperties{4, ItemProperties::NEW_LINE, ST7735_YELLOW, 12, 186, 0, "%"});
+    display.addItem(DISPLAY_KEY_LED2, "LED2", ItemProperties{4, ItemProperties::NEW_LINE, ST7735_YELLOW, 115, 186, 0, "%"});
+    display.addItem(DISPLAY_KEY_LED3, "LED3", ItemProperties{4, ItemProperties::NEW_LINE, ST7735_YELLOW, 220, 186, 0, "%"});
+    display.addItem(DISPLAY_KEY_TEMP, "Temperature", ItemProperties{4, ItemProperties::NEW_LINE, ST7735_GREEN, 12, 12, 0, ""});
+    display.addItem(DISPLAY_KEY_IP, "IP     :", ItemProperties{1, ItemProperties::SAME_LINE, COLOR_YELLOW, 160, 12, 6, ""});
+    display.addItem(DISPLAY_KEY_PORT, "port   :", ItemProperties{1, ItemProperties::SAME_LINE, COLOR_YELLOW, 160, 22, 6, ""});
+    display.addItem(DISPLAY_KEY_MAC, "MAC    :", ItemProperties{1, ItemProperties::SAME_LINE, COLOR_BLUE, 160, 32, 6, ""});
+    display.addItem(DISPLAY_KEY_VERSION, "version:", ItemProperties{1, ItemProperties::SAME_LINE, COLOR_BLUE, 160, 42, 6, ""});
+    display.addItem(DISPLAY_KEY_BAUD, "baud   :", ItemProperties{1, ItemProperties::SAME_LINE, COLOR_BLUE, 160, 52, 6, ""});
 
     display.updateItem(DISPLAY_KEY_IP, address);
     display.updateItem(DISPLAY_KEY_PORT, 3300);
-    display.updateItem(DISPLAY_KEY_HIFI, 20);
+    connManager.getMACAddress(address);
+    display.updateItem(DISPLAY_KEY_MAC, address);
+    display.updateItem(DISPLAY_KEY_VERSION, FIRMWARE_VERSION);
+    display.updateItem(DISPLAY_KEY_BAUD, SERIAL_BAUD);
 
     Thread("application", &application_task_worker, 9);
-    Thread("volume", &volume_task_worker, 5);
+    Thread("temperature", &temperature_read_worker, 5);
 }
 
 void loop() {

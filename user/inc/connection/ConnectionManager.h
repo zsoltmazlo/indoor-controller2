@@ -19,33 +19,25 @@
 #include <string>
 #include <list>
 #include <memory>
+#include "../utils/Message.h"
 
 typedef std::function<void(uint8_t) > uint8_callback;
 
 namespace connection {
 
-union MessageData {
-	int i;
-	float f;
-	long l;
-	double d;
-	bool b;
-};
-
-using message_callback = std::function<void(const MessageData&) >;
+using message_callback = std::function<void(const utils::Message&) >;
 
 class MessageHandler {
-	
 public:
 
 	message_callback callback;
-	
+
 	std::string applyOnField;
-	
-	MessageHandler(const char* field, message_callback cb): callback(cb), applyOnField(field) {
-		
+
+	MessageHandler(const char* field, message_callback cb) : callback(cb), applyOnField(field) {
+
 	}
-	
+
 	bool checkField(std::string field) {
 		return applyOnField.compare(field) == 0;
 	}
@@ -68,7 +60,7 @@ public:
 	void getMACAddress(char* address);
 
 	void getIpAddress(char* address);
-	
+
 	void addMessageHandler(const MessageHandler& handler);
 
 	void startTcpServer(uint16_t port);

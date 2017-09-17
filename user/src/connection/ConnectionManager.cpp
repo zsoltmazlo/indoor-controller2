@@ -15,7 +15,7 @@
 using namespace picojson;
 
 connection::ConnectionManager::ConnectionManager() {
-    
+
 }
 
 void connection::ConnectionManager::init() {
@@ -167,14 +167,23 @@ void connection::ConnectionManager::tcp_server_worker() {
                 // all message handler will test if need to be called
                 for (auto handler : handlers) {
                     if (handler.checkField(field.first)) {
-                        MessageData data;
+                        utils::Message data;
                         if (field.second.is<double>()) {
-                            data.d = field.second.get<double>();
-                            send_ack("Message processed.", field.second.get<double>(), client);
+                            double val = field.second.get<double>();
+                            // if the field is containing integer number instead of a floating number,
+                            // it still stored as a double, therefore we need to check
+                            if (val != (int) val) {
+                                data = val;
+                            } else {
+                                data = (int)val;
+                            }
+                            send_ack("Message processed.", val, client);
+
+
                         }
                         if (field.second.is<bool>()) {
-                            data.b = field.second.get<bool>();
-                            send_ack("Message processed.", field.second.get<bool>(), client);
+                            data = field.second.get<bool>();
+                            send_ack("Message processed.", (bool)data, client);
                         }
                         handler.callback(data);
                     }
