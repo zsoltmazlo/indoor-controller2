@@ -214,11 +214,16 @@ void Display::addDataToGraph(float data) {
     uint8_t clock = NUMBER_OF_DATA_POINTS;
     while (grid < _graph.x + _graph.w - 6) {
         tft->setCursor(grid - 4, _graph.y + _graph.h + 2);
-        tft->printf("%dh", clock/2);
+        tft->printf("%dh", clock / 2);
         grid += _graph.grid_x * 6;
         clock -= 6;
     }
 
+}
+
+template<>
+void Display::updateItem<std::string>(int key, const std::string& value) {
+    updateItem(key, value.c_str());
 }
 
 

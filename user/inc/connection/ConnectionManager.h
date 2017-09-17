@@ -20,6 +20,7 @@
 #include <list>
 #include <memory>
 #include "../utils/Message.h"
+#include "MQTT.h"
 
 typedef std::function<void(uint8_t) > uint8_callback;
 
@@ -32,24 +33,27 @@ public:
 
 	message_callback callback;
 
-	std::string topic;
+	std::string field;
 
-	MessageHandler(std::string&& t, message_callback cb) : callback(cb), topic(t) {
+	MessageHandler(std::string&& field, message_callback cb) : callback(cb), field(field) {
 
 	}
 
-	bool checkField(const std::string& t) {
-		return topic.compare(t) == 0;
+	bool checkField(const std::string& f) {
+		return field.compare(f) == 0;
 	}
 
 };
 
 class ConnectionManager {
-	std::shared_ptr<TCPServer> server;
-
-	std::list<MessageHandler> handlers;
 
 public:
+	
+	enum State {
+		DISCONNECTED,
+		CONNECTING,
+		CONNECTED
+	};
 
 	ConnectionManager();
 	
@@ -64,10 +68,26 @@ public:
 	void addMessageHandler(const MessageHandler& handler);
 
 	void startTcpServer(uint16_t port);
+	
+	void connectToBroker(const std::string& broker, uint16_t port);
+	
+	State getConnectionState() const;
 
 private:
+	
+	State state;
+	
+	std::shared_ptr<TCPServer> server;
+
+	std::list<MessageHandler> handlers;
+	
+	std::shared_ptr<MQTT> broker;
 
 	void tcp_server_worker(void);
+	
+	void mqtt_server_worker(void);
+	
+	void mqtt_onmessage_callback(char* topic, uint8_t* payload, unsigned int len);
 
 	template<typename T>
 	void send_ack(const std::string& message, T new_value, TCPClient& client);

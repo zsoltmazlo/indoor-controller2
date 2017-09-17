@@ -22,7 +22,7 @@ SYSTEM_MODE(MANUAL)
 
 STARTUP(WiFi.selectAntenna(ANT_EXTERNAL));
 
-#define FIRMWARE_VERSION "1.8"
+#define FIRMWARE_VERSION "2.0"
 
 #define TFT_CS      D5
 #define TFT_RST     D7
@@ -222,11 +222,14 @@ void setup() {
     debug::println("MAIN | \tMAC: ", macAddress.c_str());
     display.println("MAC .............: %s", macAddress.c_str());
     display.println("IP ..............: %s", ipAddress.c_str());
+
+    //    display.println("Starting server...");
+    //    connManager.startTcpServer(3300);
+    display.print("Connecting to broker...");
+    connManager.connectToBroker("192.168.1.3", 1883);
     display.println("done.");
+    debug::println("MAIN | Connected to broker: 192.168.1.3");
 
-    display.println("Starting server...");
-
-    connManager.startTcpServer(3300);
 
     // STAGE THREE: set callbacks
     connManager.addMessageHandler({"led1", std::bind(set_led_brightness, LED_STRIP1, DISPLAY_KEY_LED1, std::placeholders::_1)});
@@ -244,15 +247,14 @@ void setup() {
     display.addItem(DISPLAY_KEY_LED2, "LED2", ItemProperties{4, ItemProperties::NEW_LINE, ST7735_YELLOW, 115, 186, 0, "%"});
     display.addItem(DISPLAY_KEY_LED3, "LED3", ItemProperties{4, ItemProperties::NEW_LINE, ST7735_YELLOW, 220, 186, 0, "%"});
     display.addItem(DISPLAY_KEY_TEMP, "Temperature", ItemProperties{4, ItemProperties::NEW_LINE, ST7735_GREEN, 12, 12, 0, ""});
-    display.addItem(DISPLAY_KEY_IP, "IP     :", ItemProperties{1, ItemProperties::SAME_LINE, COLOR_YELLOW, 160, 12, 6, ""});
-    display.addItem(DISPLAY_KEY_PORT, "port   :", ItemProperties{1, ItemProperties::SAME_LINE, COLOR_YELLOW, 160, 22, 6, ""});
+    display.addItem(DISPLAY_KEY_IP, "channel:", ItemProperties{1, ItemProperties::SAME_LINE, COLOR_YELLOW, 160, 12, 6, ""});
+    display.addItem(DISPLAY_KEY_PORT, "status :", ItemProperties{1, ItemProperties::SAME_LINE, COLOR_YELLOW, 160, 22, 6, ""});
     display.addItem(DISPLAY_KEY_MAC, "MAC    :", ItemProperties{1, ItemProperties::SAME_LINE, COLOR_BLUE, 160, 32, 6, ""});
     display.addItem(DISPLAY_KEY_VERSION, "version:", ItemProperties{1, ItemProperties::SAME_LINE, COLOR_BLUE, 160, 42, 6, ""});
     display.addItem(DISPLAY_KEY_BAUD, "baud   :", ItemProperties{1, ItemProperties::SAME_LINE, COLOR_BLUE, 160, 52, 6, ""});
 
-    display.updateItem(DISPLAY_KEY_IP, ipAddress.c_str());
-    display.updateItem(DISPLAY_KEY_PORT, 3300);
-    display.updateItem(DISPLAY_KEY_MAC, macAddress.c_str());
+    display.updateItem(DISPLAY_KEY_IP, "chiron/ledstrip");
+    display.updateItem(DISPLAY_KEY_MAC, macAddress);
     display.updateItem(DISPLAY_KEY_VERSION, FIRMWARE_VERSION);
     display.updateItem(DISPLAY_KEY_BAUD, SERIAL_BAUD);
 
@@ -263,4 +265,22 @@ void setup() {
 void loop() {
     signaling::set_state(signaling::IDLE);
     delay(2000);
+
+    display_mutex.lock();
+    switch (connManager.getConnectionState()) {
+        case connection::ConnectionManager::CONNECTED:
+            display.updateItem(DISPLAY_KEY_PORT, "connected");
+            break;
+        case connection::ConnectionManager::DISCONNECTED:
+            display.updateItem(DISPLAY_KEY_PORT, "disconnected");
+            break;
+        case connection::ConnectionManager::CONNECTING:
+            display.updateItem(DISPLAY_KEY_PORT, "reconnecting...");
+            break;
+
+    }
+    display_mutex.unlock();
+
+
+
 }

@@ -2299,6 +2299,7 @@
         <df name="inc">
           <df name="connection">
             <in>ConnectionManager.h</in>
+            <in>MQTT.h</in>
           </df>
           <df name="display">
             <df name="Fonts">
@@ -2386,6 +2387,7 @@
         <df name="src">
           <df name="connection">
             <in>ConnectionManager.cpp</in>
+            <in>MQTT.cpp</in>
           </df>
           <df name="display">
             <in>Adafruit_GFX.cpp</in>

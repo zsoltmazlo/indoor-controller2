@@ -14,12 +14,14 @@
 
 using namespace picojson;
 
+using namespace std::placeholders;
+
 connection::ConnectionManager::ConnectionManager() {
 }
 
-
 void connection::ConnectionManager::init() {
     spark::WiFi.on();
+    state = State::DISCONNECTED;
 }
 
 void connection::ConnectionManager::connectToNetwork(const std::string& ssid, const std::string& password) {
@@ -216,6 +218,109 @@ void connection::ConnectionManager::tcp_server_worker() {
 
     }
 }
+
+/**
+ * MQTT-based implementation
+ */
+
+void connection::ConnectionManager::mqtt_onmessage_callback(char* topic, uint8_t* payload, unsigned int len) {
+    debug::println("Message received on %s: %s", topic, payload);
+
+    if (strcmp(topic, "chiron/ledstrip") == 0) {
+
+        // parsing json message
+        std::string json(reinterpret_cast<char*>(payload));
+        value json_message;
+        std::string err = parse(json_message, json);
+
+        if (!err.empty()) {
+            debug::println("MQTT | Error occured during parsing message: %s", err.c_str());
+            return;
+        }
+
+        // if received message is not an JSON object, halt
+        if (!json_message.is<object>()) {
+            debug::println("MQTT | Received message is not a JSON object.");
+            return;
+        }
+
+
+        // check all message handler
+        debug::println("MQTT | Received:");
+        const value::object& message = json_message.get<object>();
+        for (auto field : message) {
+
+            debug::println("         %s: %s", field.first.c_str(), field.second.to_str().c_str());
+
+            // all message handler will test if need to be called
+            for (auto handler : handlers) {
+                if (handler.checkField(field.first)) {
+                    utils::Message data;
+                    if (field.second.is<double>()) {
+                        double val = field.second.get<double>();
+                        // if the field is containing integer number instead of a floating number,
+                        // it still stored as a double, therefore we need to check
+                        if (val != (int) val) {
+                            data = val;
+                        } else {
+                            data = (int) val;
+                        }
+
+                    }
+                    if (field.second.is<bool>()) {
+                        data = field.second.get<bool>();
+                    }
+                    handler.callback(data);
+                }
+            }
+        }
+
+
+    }
+
+}
+
+void connection::ConnectionManager::connectToBroker(const std::string& broker, uint16_t port) {
+    // fucking library makers...
+    auto callback = std::bind(&connection::ConnectionManager::mqtt_onmessage_callback, this, _1, _2, _3);
+    this->broker = std::make_shared<MQTT>(const_cast<char*>(broker.c_str()), port, 1800, callback);
+    this->broker->connect("chiron");
+
+    if (this->broker->isConnected()) {
+        state = CONNECTED;
+        this->broker->subscribe("chiron/ledstrip");
+    }
+
+    // starting worker thread
+    Thread("server", std::bind(&connection::ConnectionManager::mqtt_server_worker, this), 9);
+
+}
+
+void connection::ConnectionManager::mqtt_server_worker() {
+
+    // this worker thread is only needed to keep mqtt connection alive
+    debug::println("MQTT | Thread started.");
+
+    while (true) {
+        this->broker->loop();
+
+        if (!this->broker->isConnected()) {
+            state = CONNECTING;
+            this->broker->connect("chiron");
+        } else {
+            state = CONNECTED;
+        }
+
+        delay(100);
+    }
+
+}
+
+connection::ConnectionManager::State connection::ConnectionManager::getConnectionState() const {
+    return state;
+}
+
+
 
 
 

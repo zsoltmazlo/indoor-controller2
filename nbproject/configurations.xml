@@ -975,6 +975,7 @@
         <df name="src">
           <df name="connection">
             <in>ConnectionManager.cpp</in>
+            <in>MQTT.cpp</in>
           </df>
           <df name="display">
             <in>Adafruit_GFX.cpp</in>
@@ -6572,6 +6573,10 @@
             ex="false"
             tool="1"
             flavor2="8">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="user/src/connection/MQTT.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="1">
         </ccTool>
       </item>

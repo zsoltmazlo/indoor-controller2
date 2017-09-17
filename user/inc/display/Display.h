@@ -126,7 +126,5 @@ void Display::updateItem(int key, const T& value) {
 	this->updatePropertyValue(key, value);
 }
 
-//template<>
-//void Display::updateItem<std::string>(int key, const std::string& value) {
-//	this->updateItem(key, value.c_str());
-//}
+template<>
+void Display::updateItem<std::string>(int key, const std::string& value);
