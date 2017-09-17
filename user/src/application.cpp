@@ -21,9 +21,8 @@ SYSTEM_THREAD(ENABLED)
 SYSTEM_MODE(MANUAL)
 
 STARTUP(WiFi.selectAntenna(ANT_EXTERNAL));
-//STARTUP(WiFi.selectAntenna(ANT_INTERNAL))
 
-#define FIRMWARE_VERSION "1.7"
+#define FIRMWARE_VERSION "1.8"
 
 #define TFT_CS      D5
 #define TFT_RST     D7
@@ -63,10 +62,13 @@ std::mutex display_mutex;
 void set_led_brightness(uint8_t pin, uint8_t display_key, const utils::Message& data) {
     signaling::set_state(signaling::LED_CHANGED);
     int brightness = data;
-    debug::println("MAIN | Setting up LED brightness%d: %u", display_key - DISPLAY_KEY_LED1 + 1, brightness);
+    debug::println("MAIN | Setting up LED%d brightness: %u", display_key - DISPLAY_KEY_LED1 + 1, brightness);
     uint8_t width = map(brightness, 0, 100, 0, 255);
     analogWrite(pin, width);
+
+    display_mutex.lock();
     display.updateItem(display_key, brightness);
+    display_mutex.unlock();
 }
 
 void application_task_worker(void) {
@@ -120,12 +122,9 @@ void application_task_worker(void) {
         // per unit.
         // 
         // therefore the measurement threshold is 40*0.8mV = 32mV
-        if (display_mutex.try_lock()) {
-            potmeter_check(LED_POTM1, LED_STRIP1, DISPLAY_KEY_LED1, &led1_prev);
-            potmeter_check(LED_POTM2, LED_STRIP2, DISPLAY_KEY_LED2, &led2_prev);
-            potmeter_check(LED_POTM3, LED_STRIP3, DISPLAY_KEY_LED3, &led3_prev);
-            display_mutex.unlock();
-        }
+        potmeter_check(LED_POTM1, LED_STRIP1, DISPLAY_KEY_LED1, &led1_prev);
+        potmeter_check(LED_POTM2, LED_STRIP2, DISPLAY_KEY_LED2, &led2_prev);
+        potmeter_check(LED_POTM3, LED_STRIP3, DISPLAY_KEY_LED3, &led3_prev);
         delay(80);
     }
 }
@@ -164,15 +163,16 @@ void temperature_read_worker() {
         temp = raw / pow(2, 16) * 165 - 40;
 
         // wait here while the display mutex is locked by other process
-        while (display_mutex.try_lock());
+        display_mutex.lock();
 
         // one hour is elapsed after last measurement, show on graph
         if (measurement_count == 0) {
             display.addDataToGraph(temp);
         }
 
+        // 60 * 30 sec = 180 sec (0.5 hour)
         ++measurement_count;
-        if (measurement_count == 120) {
+        if (measurement_count == 60) {
             measurement_count = 0;
         }
 
@@ -190,8 +190,8 @@ void temperature_read_worker() {
 
 void setup() {
     display.init();
-    display.setBacklight(Display::On);
     connManager.init();
+    display.setBacklight(Display::On);
     debug::init(SERIAL_BAUD);
 
     // enable dfu mode on button click
@@ -199,15 +199,11 @@ void setup() {
         System.dfu();
     });
 
-    auto macAddress = connManager.getMACAddress();
-
 
     // STAGE ONE: initializing
     display.println("Photon started.");
-    display.println("Firmware version : %s", FIRMWARE_VERSION);    
-    display.println("MAC .............: %s", macAddress);
-    debug::println("MAIN | Photon started.\n\tFirmware version: %s\n\t"
-            "MAC: %s", FIRMWARE_VERSION, macAddress);
+    display.println("Firmware version : %s", FIRMWARE_VERSION);
+    debug::println("MAIN | Photon started.\n\tFirmware version: %s", FIRMWARE_VERSION);
 
     pinMode(LED_STRIP1, OUTPUT);
     pinMode(LED_STRIP2, OUTPUT);
@@ -218,11 +214,14 @@ void setup() {
     // STAGE TWO: establish connection
     display.println("Connecting...");
 
-    connManager.connectToNetwork();
+    connManager.connectToNetwork("lsmx49");
 
+    auto macAddress = connManager.getMACAddress();
     auto ipAddress = connManager.getIpAddress();
-    debug::println("MAIN | Connected to network.\n\tIP: %s", ipAddress);
-    display.println("IP ..............: %s", ipAddress);
+    debug::println("MAIN | Connected to network.\n\tIP: %s", ipAddress.c_str());
+    debug::println("MAIN | \tMAC: ", macAddress.c_str());
+    display.println("MAC .............: %s", macAddress.c_str());
+    display.println("IP ..............: %s", ipAddress.c_str());
     display.println("done.");
 
     display.println("Starting server...");
@@ -239,6 +238,7 @@ void setup() {
     delay(2000);
 
     display.clear();
+
     // Properties order: font size, NL/SL, color, x, y, offset, postfix
     display.addItem(DISPLAY_KEY_LED1, "LED1", ItemProperties{4, ItemProperties::NEW_LINE, ST7735_YELLOW, 12, 186, 0, "%"});
     display.addItem(DISPLAY_KEY_LED2, "LED2", ItemProperties{4, ItemProperties::NEW_LINE, ST7735_YELLOW, 115, 186, 0, "%"});

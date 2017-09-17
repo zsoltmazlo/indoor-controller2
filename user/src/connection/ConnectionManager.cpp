@@ -15,18 +15,22 @@
 using namespace picojson;
 
 connection::ConnectionManager::ConnectionManager() {
-
 }
+
 
 void connection::ConnectionManager::init() {
     spark::WiFi.on();
-
-    // no need for password, home WiFi network satefy is MAC address based
-    spark::WiFi.setCredentials("lsmx49");
 }
 
-void connection::ConnectionManager::connectToNetwork() {
+void connection::ConnectionManager::connectToNetwork(const std::string& ssid, const std::string& password) {
     spark::WiFi.on();
+
+    if (password == "") {
+        spark::WiFi.setCredentials(ssid.c_str());
+    } else {
+        spark::WiFi.setCredentials(ssid.c_str(), password.c_str());
+    }
+
     spark::WiFi.connect();
 
     while (!spark::WiFi.ready()) {
@@ -45,7 +49,7 @@ std::string connection::ConnectionManager::getIpAddress() {
 
     // need to call directly Particle process to get really addres...
     Particle.process();
-    
+
     sprintf(buffer, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
     return std::string(buffer);
 }
@@ -179,7 +183,7 @@ void connection::ConnectionManager::tcp_server_worker() {
                             if (val != (int) val) {
                                 data = val;
                             } else {
-                                data = (int)val;
+                                data = (int) val;
                             }
                             send_ack("Message processed.", val, client);
 

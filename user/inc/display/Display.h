@@ -53,7 +53,7 @@ struct ItemProperties {
 
 };
 
-#define NUMBER_OF_DATA_POINTS 24
+#define NUMBER_OF_DATA_POINTS 48
 
 class Display {
 	std::shared_ptr<DISPLAY_TYPE> tft;
@@ -83,7 +83,7 @@ public:
 	void addItem(int key, const std::string& label, ItemProperties properties);
 
 	template<typename T>
-	void updateItem(int key, T value);
+	void updateItem(int key, const T& value);
 
 	void _drawGraphAxes();
 
@@ -105,7 +105,7 @@ public:
 };
 
 template<typename T>
-void Display::updateItem(int key, T value) {
+void Display::updateItem(int key, const T& value) {
 	auto props = items[key];
 
 	// clear only the bounding box of the previous box
@@ -125,3 +125,8 @@ void Display::updateItem(int key, T value) {
 	tft->print(props.postfix);
 	this->updatePropertyValue(key, value);
 }
+
+//template<>
+//void Display::updateItem<std::string>(int key, const std::string& value) {
+//	this->updateItem(key, value.c_str());
+//}

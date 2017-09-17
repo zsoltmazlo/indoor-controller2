@@ -52,13 +52,11 @@ class ConnectionManager {
 public:
 
 	ConnectionManager();
-
+	
 	void init();
 
-	void connectToNetwork();
+	void connectToNetwork(const std::string& ssid, const std::string& password = "");
 	
-	void connectToBroker();
-
 	std::string getMACAddress();
 
 	std::string getIpAddress();
