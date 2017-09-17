@@ -19,6 +19,10 @@
 #include <map>
 #include <string>
 
+
+#include <type_traits>
+
+
 #define COLOR_BLACK  ILI9341_BLACK
 #define COLOR_RED  ILI9341_RED
 #define COLOR_GREEN  ILI9341_GREEN
@@ -76,29 +80,10 @@ public:
 
 	void init();
 
-	void addItem(int key, const char* label, ItemProperties properties);
+	void addItem(int key, const std::string& label, ItemProperties properties);
 
 	template<typename T>
-	void updateItem(int key, T value) {
-		auto props = items[key];
-
-		// clear only the bounding box of the previous box
-		char tempStr[24];
-		sprintf(tempStr, "%s%s", props.current_value, props.postfix);
-
-		tft->setTextSize(props.font_size);
-
-		// calculating approximately the size of the text
-		uint16_t w = props.font_size * 6 * strlen(tempStr) - 1;
-		uint16_t h = props.font_size * 8;
-
-		tft->fillRect(props.x + props.offset, props.y, w, h, COLOR_BLACK);
-		tft->setCursor(props.x + props.offset, props.y);
-		tft->setTextColor(props.color);
-		tft->print(value);
-		tft->print(props.postfix);
-		this->updatePropertyValue(key, value);
-	}
+	void updateItem(int key, T value);
 
 	void _drawGraphAxes();
 
@@ -118,3 +103,25 @@ public:
 	void println(const char* fmt, ...);
 
 };
+
+template<typename T>
+void Display::updateItem(int key, T value) {
+	auto props = items[key];
+
+	// clear only the bounding box of the previous box
+	char tempStr[24];
+	sprintf(tempStr, "%s%s", props.current_value, props.postfix);
+
+	tft->setTextSize(props.font_size);
+
+	// calculating approximately the size of the text
+	uint16_t w = props.font_size * 6 * strlen(tempStr) - 1;
+	uint16_t h = props.font_size * 8;
+
+	tft->fillRect(props.x + props.offset, props.y, w, h, COLOR_BLACK);
+	tft->setCursor(props.x + props.offset, props.y);
+	tft->setTextColor(props.color);
+	tft->print(value);
+	tft->print(props.postfix);
+	this->updatePropertyValue(key, value);
+}

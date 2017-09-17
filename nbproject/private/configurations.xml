@@ -2365,7 +2365,6 @@
             <in>signaling.h</in>
           </df>
           <in>application.h</in>
-          <in>tasks.h</in>
         </df>
         <df name="libraries">
           <df name="Serial2">
@@ -2394,9 +2393,6 @@
             <in>Adafruit_ST7735.cpp</in>
             <in>Display.cpp</in>
             <in>glcdfont.c</in>
-          </df>
-          <df name="tasks">
-            <in>led_control.cpp</in>
           </df>
           <df name="utils">
             <in>Message.cpp</in>

@@ -972,9 +972,6 @@
         </df>
       </df>
       <df name="user">
-        <df name="inc">
-          <in>tasks.h</in>
-        </df>
         <df name="src">
           <df name="connection">
             <in>ConnectionManager.cpp</in>
@@ -985,9 +982,6 @@
             <in>Adafruit_ST7735.cpp</in>
             <in>Display.cpp</in>
             <in>glcdfont.c</in>
-          </df>
-          <df name="tasks">
-            <in>led_control.cpp</in>
           </df>
           <df name="utils">
             <in>Message.cpp</in>
@@ -6570,8 +6564,6 @@
         <ccTool flags="1">
         </ccTool>
       </item>
-      <item path="user/inc/tasks.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="user/src/application.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="1">
         </ccTool>
@@ -6608,8 +6600,6 @@
       <item path="user/src/display/glcdfont.c" ex="false" tool="0" flavor2="3">
         <cTool flags="3">
         </cTool>
-      </item>
-      <item path="user/src/tasks/led_control.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="user/src/utils/Message.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="1">

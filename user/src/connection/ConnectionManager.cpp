@@ -39,24 +39,28 @@ void connection::ConnectionManager::connectToNetwork() {
     debug::println("CONN | Wifi status: %d", spark::WiFi.ready());
 }
 
-void connection::ConnectionManager::getIpAddress(char* address) {
+std::string connection::ConnectionManager::getIpAddress() {
     IPAddress ip = spark::WiFi.localIP();
+    char buffer[40];
 
     // need to call directly Particle process to get really addres...
     Particle.process();
-
-    sprintf(address, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+    
+    sprintf(buffer, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+    return std::string(buffer);
 }
 
-void connection::ConnectionManager::getMACAddress(char* address) {
+std::string connection::ConnectionManager::getMACAddress() {
     uint8_t mac[6];
     spark::WiFi.macAddress(mac);
+    char buffer[40];
 
     // need to call directly Particle process to get really addres...
     Particle.process();
 
-    sprintf(address, "%02X:%02X:%02X:%02X:%02X:%02X",
+    sprintf(buffer, "%02X:%02X:%02X:%02X:%02X:%02X",
             mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    return std::string(buffer);
 }
 
 void connection::ConnectionManager::addMessageHandler(const MessageHandler& handler) {
@@ -69,7 +73,7 @@ void connection::ConnectionManager::startTcpServer(uint16_t port) {
     Thread("server", std::bind(&connection::ConnectionManager::tcp_server_worker, this), 9);
 }
 
-void connection::ConnectionManager::send_nack(const char* message, TCPClient& client) {
+void connection::ConnectionManager::send_nack(const std::string& message, TCPClient& client) {
     picojson::object response;
     response["message"] = value(message);
     response["success"] = value(false);
@@ -80,7 +84,7 @@ void connection::ConnectionManager::send_nack(const char* message, TCPClient& cl
 namespace connection {
 
     template<typename T>
-    void ConnectionManager::send_ack(const char* message, T new_value, TCPClient& client) {
+    void ConnectionManager::send_ack(const std::string& message, T new_value, TCPClient& client) {
         picojson::object response;
         response["message"] = picojson::value(message);
         response["success"] = picojson::value(true);

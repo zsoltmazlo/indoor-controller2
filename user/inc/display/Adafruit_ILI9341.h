@@ -18,6 +18,7 @@
 
 #include "application.h"
 #include "Adafruit_GFX.h"
+#include <string>
 
 #if defined(ARDUINO_STM32_FEATHER)
 typedef volatile uint32 RwReg;
@@ -160,7 +161,7 @@ class Adafruit_ILI9341 : public Adafruit_GFX {
         uint8_t   readcommand8(uint8_t reg, uint8_t index = 0);
 
         uint16_t  color565(uint8_t r, uint8_t g, uint8_t b);
-
+		
     private:
 #ifdef ESP32
         SPIClass _spi;

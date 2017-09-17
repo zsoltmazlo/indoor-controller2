@@ -194,21 +194,20 @@ void setup() {
     connManager.init();
     debug::init(SERIAL_BAUD);
 
-    char address[20];
-    connManager.getMACAddress(address);
-
     // enable dfu mode on button click
     System.on(button_click, [](system_event_t ev, int param) {
         System.dfu();
     });
 
+    auto macAddress = connManager.getMACAddress();
+
 
     // STAGE ONE: initializing
     display.println("Photon started.");
     display.println("Firmware version : %s", FIRMWARE_VERSION);    
-    display.println("MAC .............: %s", address);
+    display.println("MAC .............: %s", macAddress);
     debug::println("MAIN | Photon started.\n\tFirmware version: %s\n\t"
-            "MAC: %s", FIRMWARE_VERSION, address);
+            "MAC: %s", FIRMWARE_VERSION, macAddress);
 
     pinMode(LED_STRIP1, OUTPUT);
     pinMode(LED_STRIP2, OUTPUT);
@@ -221,9 +220,9 @@ void setup() {
 
     connManager.connectToNetwork();
 
-    connManager.getIpAddress(address);
-    debug::println("MAIN | Connected to network.\n\tIP: %s", address);
-    display.println("IP ..............: %s", address);
+    auto ipAddress = connManager.getIpAddress();
+    debug::println("MAIN | Connected to network.\n\tIP: %s", ipAddress);
+    display.println("IP ..............: %s", ipAddress);
     display.println("done.");
 
     display.println("Starting server...");
@@ -251,10 +250,9 @@ void setup() {
     display.addItem(DISPLAY_KEY_VERSION, "version:", ItemProperties{1, ItemProperties::SAME_LINE, COLOR_BLUE, 160, 42, 6, ""});
     display.addItem(DISPLAY_KEY_BAUD, "baud   :", ItemProperties{1, ItemProperties::SAME_LINE, COLOR_BLUE, 160, 52, 6, ""});
 
-    display.updateItem(DISPLAY_KEY_IP, address);
+    display.updateItem(DISPLAY_KEY_IP, ipAddress.c_str());
     display.updateItem(DISPLAY_KEY_PORT, 3300);
-    connManager.getMACAddress(address);
-    display.updateItem(DISPLAY_KEY_MAC, address);
+    display.updateItem(DISPLAY_KEY_MAC, macAddress.c_str());
     display.updateItem(DISPLAY_KEY_VERSION, FIRMWARE_VERSION);
     display.updateItem(DISPLAY_KEY_BAUD, SERIAL_BAUD);
 

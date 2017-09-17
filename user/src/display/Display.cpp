@@ -24,13 +24,13 @@ void Display::init() {
 
 }
 
-void Display::addItem(int key, const char* label, ItemProperties properties) {
+void Display::addItem(int key, const std::string& label, ItemProperties properties) {
 
     // immediately show on LCD
     tft->setCursor(properties.x, properties.y);
     tft->setTextSize(1);
     tft->setTextColor(properties.color);
-    tft->print(label);
+    tft->print(label.c_str());
 
     switch (properties.align) {
         case ItemProperties::NEW_LINE:
@@ -106,6 +106,11 @@ void Display::updatePropertyValue<const char*>(int key, const char* value) {
     sprintf(items[key].current_value, "%s", value);
 }
 
+template<>
+void Display::updatePropertyValue<const std::string&>(int key, const std::string& value) {
+    sprintf(items[key].current_value, "%s", value.c_str());
+}
+
 void Display::_drawGraphAxes() {
     this->tft->fillRect(_graph.x, _graph.y, _graph.w, _graph.h, COLOR_BLACK);
 
@@ -175,23 +180,23 @@ void Display::addDataToGraph(float data) {
     uint16_t k, x, y;
 
     x = _graph.x + 6 + _graph.grid_x * 2;
-    
+
     // first point is the same with the first measurement
     k = _graph.data_index % NUMBER_OF_DATA_POINTS;
     prev_y = _graph.y + _graph.h - (_graph.data[k] / range * _graph.h) - _graph.y_pos;
     prev_x = 0;
-    
+
     for (uint16_t i = 0; i < NUMBER_OF_DATA_POINTS; ++i) {
         k = (i + _graph.data_index) % NUMBER_OF_DATA_POINTS;
         y = _graph.y + _graph.h - (_graph.data[k] / range * _graph.h) - _graph.y_pos;
         tft->drawLine(prev_x, prev_y, x, y, COLOR_GREEN);
         prev_x = x;
         prev_y = y;
-        x += _graph.grid_x;	
+        x += _graph.grid_x;
     }
-    
+
     // the last measurement will be repeated again
-    tft->drawLine(prev_x, prev_y, _graph.grid_x+_graph.w, prev_y, COLOR_GREEN);
+    tft->drawLine(prev_x, prev_y, _graph.grid_x + _graph.w, prev_y, COLOR_GREEN);
 
     // redraw helpers
     tft->setTextSize(1);

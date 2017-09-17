@@ -32,14 +32,14 @@ public:
 
 	message_callback callback;
 
-	std::string applyOnField;
+	std::string topic;
 
-	MessageHandler(const char* field, message_callback cb) : callback(cb), applyOnField(field) {
+	MessageHandler(std::string&& t, message_callback cb) : callback(cb), topic(t) {
 
 	}
 
-	bool checkField(std::string field) {
-		return applyOnField.compare(field) == 0;
+	bool checkField(const std::string& t) {
+		return topic.compare(t) == 0;
 	}
 
 };
@@ -56,10 +56,12 @@ public:
 	void init();
 
 	void connectToNetwork();
+	
+	void connectToBroker();
 
-	void getMACAddress(char* address);
+	std::string getMACAddress();
 
-	void getIpAddress(char* address);
+	std::string getIpAddress();
 
 	void addMessageHandler(const MessageHandler& handler);
 
@@ -70,14 +72,12 @@ private:
 	void tcp_server_worker(void);
 
 	template<typename T>
-	void send_ack(const char* message, T new_value, TCPClient& client);
+	void send_ack(const std::string& message, T new_value, TCPClient& client);
 
-	void send_nack(const char* message, TCPClient& client);
+	void send_nack(const std::string& message, TCPClient& client);
 
 	template<typename T>
 	T parse_message(TCPClient& client, bool* success);
-
-
 
 };
 
