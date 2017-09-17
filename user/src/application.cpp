@@ -11,8 +11,6 @@
 #include "display/Display.h"
 #include "utils/debug.h"
 #include "connection/ConnectionManager.h"
-#include "utils/irtransceiver.h"
-#include "spark_wiring_usartserial.h"
 #include "spark_wiring_i2c.h"
 
 #include <mutex>
@@ -195,7 +193,6 @@ void setup() {
     display.setBacklight(Display::On);
     connManager.init();
     debug::init(SERIAL_BAUD);
-    //    Serial1.begin(SERIAL_BAUD);
 
     char address[20];
     connManager.getMACAddress(address);
@@ -208,7 +205,7 @@ void setup() {
 
     // STAGE ONE: initializing
     display.println("Photon started.");
-    display.println("Firmware version : %s", FIRMWARE_VERSION);
+    display.println("Firmware version : %s", FIRMWARE_VERSION);    
     display.println("MAC .............: %s", address);
     debug::println("MAIN | Photon started.\n\tFirmware version: %s\n\t"
             "MAC: %s", FIRMWARE_VERSION, address);
@@ -237,7 +234,6 @@ void setup() {
     connManager.addMessageHandler({"led1", std::bind(set_led_brightness, LED_STRIP1, DISPLAY_KEY_LED1, std::placeholders::_1)});
     connManager.addMessageHandler({"led2", std::bind(set_led_brightness, LED_STRIP2, DISPLAY_KEY_LED2, std::placeholders::_1)});
     connManager.addMessageHandler({"led3", std::bind(set_led_brightness, LED_STRIP3, DISPLAY_KEY_LED3, std::placeholders::_1)});
-    //    connManager.addMessageHandler({"tvchannel", &change_channel});
 
     // STAGE FOUR: create application task for setting highest priority for it
     display.println("Starting app...");

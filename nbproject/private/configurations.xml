@@ -2361,11 +2361,11 @@
           <df name="utils">
             <in>Message.h</in>
             <in>debug.h</in>
-            <in>irtransceiver.h</in>
             <in>picojson.h</in>
             <in>signaling.h</in>
           </df>
           <in>application.h</in>
+          <in>tasks.h</in>
         </df>
         <df name="libraries">
           <df name="Serial2">
@@ -2395,16 +2395,15 @@
             <in>Display.cpp</in>
             <in>glcdfont.c</in>
           </df>
+          <df name="tasks">
+            <in>led_control.cpp</in>
+          </df>
           <df name="utils">
             <in>Message.cpp</in>
             <in>debug.cpp</in>
-            <in>irtransceiver.cpp</in>
             <in>signaling.cpp</in>
           </df>
-          <in>adam.cpp</in>
           <in>application.cpp</in>
-          <in>opto.cpp</in>
-          <in>test.cpp</in>
         </df>
         <df name="tests">
           <df name="accept">
