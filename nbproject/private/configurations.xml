@@ -2353,11 +2353,13 @@
               <in>TomThumb.h</in>
             </df>
             <in>Adafruit_GFX.h</in>
+            <in>Adafruit_ILI9341.h</in>
             <in>Adafruit_ST7735.h</in>
             <in>Display.h</in>
             <in>gfxfont.h</in>
           </df>
           <df name="utils">
+            <in>Message.h</in>
             <in>debug.h</in>
             <in>irtransceiver.h</in>
             <in>picojson.h</in>
@@ -2388,16 +2390,21 @@
           </df>
           <df name="display">
             <in>Adafruit_GFX.cpp</in>
+            <in>Adafruit_ILI9341.cpp</in>
             <in>Adafruit_ST7735.cpp</in>
             <in>Display.cpp</in>
             <in>glcdfont.c</in>
           </df>
           <df name="utils">
+            <in>Message.cpp</in>
             <in>debug.cpp</in>
             <in>irtransceiver.cpp</in>
             <in>signaling.cpp</in>
           </df>
+          <in>adam.cpp</in>
           <in>application.cpp</in>
+          <in>opto.cpp</in>
+          <in>test.cpp</in>
         </df>
         <df name="tests">
           <df name="accept">

@@ -978,16 +978,21 @@
           </df>
           <df name="display">
             <in>Adafruit_GFX.cpp</in>
+            <in>Adafruit_ILI9341.cpp</in>
             <in>Adafruit_ST7735.cpp</in>
             <in>Display.cpp</in>
             <in>glcdfont.c</in>
           </df>
           <df name="utils">
+            <in>Message.cpp</in>
             <in>debug.cpp</in>
             <in>irtransceiver.cpp</in>
             <in>signaling.cpp</in>
           </df>
+          <in>adam.cpp</in>
           <in>application.cpp</in>
+          <in>opto.cpp</in>
+          <in>test.cpp</in>
         </df>
         <df name="tests">
           <df name="accept">
@@ -6563,6 +6568,10 @@
         <ccTool flags="1">
         </ccTool>
       </item>
+      <item path="user/src/adam.cpp" ex="false" tool="1" flavor2="8">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
       <item path="user/src/application.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="1">
         </ccTool>
@@ -6575,6 +6584,13 @@
         </ccTool>
       </item>
       <item path="user/src/display/Adafruit_GFX.cpp" ex="false" tool="1" flavor2="8">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="user/src/display/Adafruit_ILI9341.cpp"
+            ex="false"
+            tool="1"
+            flavor2="8">
         <ccTool flags="1">
         </ccTool>
       </item>
@@ -6592,6 +6608,18 @@
       <item path="user/src/display/glcdfont.c" ex="false" tool="0" flavor2="3">
         <cTool flags="3">
         </cTool>
+      </item>
+      <item path="user/src/opto.cpp" ex="false" tool="1" flavor2="8">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="user/src/test.cpp" ex="false" tool="1" flavor2="8">
+        <ccTool flags="1">
+        </ccTool>
+      </item>
+      <item path="user/src/utils/Message.cpp" ex="false" tool="1" flavor2="8">
+        <ccTool flags="1">
+        </ccTool>
       </item>
       <item path="user/src/utils/debug.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="1">
