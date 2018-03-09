@@ -12,6 +12,7 @@
 #include "utils/debug.h"
 #include "connection/ConnectionManager.h"
 #include "spark_wiring_i2c.h"
+#include "wiced/security/BESL/host/WICED/cipher_suites.h"
 
 #include <mutex>
 
@@ -105,11 +106,20 @@ void application_task_worker(void) {
         display.setBacklight(backlight);
 
         // if backlight is off, then disable all led at once
-        while (backlight == Display::Off) {
+        if (backlight == Display::Off) {
             set_led_brightness(LED_STRIP1, DISPLAY_KEY_LED1, 0);
             set_led_brightness(LED_STRIP2, DISPLAY_KEY_LED2, 0);
             set_led_brightness(LED_STRIP3, DISPLAY_KEY_LED3, 0);
-            backlight = digitalRead(TFT_BUTTON) == 0 ? Display::On : Display::Off;
+
+            // also zero out previous values for each led, thus when backlight 
+            // is on the table again, then potmeter values will be automatically updated
+            led1_prev = led2_prev = led3_prev = 0;
+
+            signaling::set_state(signaling::IDLE);
+            delay(80);
+
+            // break while cycle
+            continue;
         }
 
 
@@ -147,6 +157,14 @@ void temperature_read_worker() {
     float temp;
     measurement_count = 0;
 
+    /**
+     * http://www.ti.com/lit/ds/symlink/hdc1080.pdf, page 10
+     * 
+     * After power-up, the sensor needs at most 15 ms, to be ready to start RH 
+     * and temperature measurement.
+     */
+    delay(15);
+
     while (1) {
 
         // read temperature value
@@ -157,10 +175,23 @@ void temperature_read_worker() {
         delay(10);
         Wire.requestFrom(address, (uint8_t) 2);
 
+        /**
+         * http://www.ti.com/lit/ds/symlink/hdc1080.pdf, page 14
+         * 
+         * The temperature register is a 16-bit result register in binary format
+         * (the 2 LSBs D1 and D0 are always 0). The result of the acquisition is
+         * always a 14 bit value. The accuracy of the result is related to the 
+         * selected conversion time (refer to Electrical Characteristics(1)). 
+         * The temperature can be calculated from the output data with:
+         * 
+         * temperature (°C) = (temperature[15:00]/2^16)*165°C - 40°C
+         */
+
         msb = Wire.read();
         lsb = Wire.read();
         uint16_t raw = msb << 8 | lsb;
-        temp = raw / pow(2, 16) * 165 - 40;
+        temp = ((float) raw) / 65536.0 * 165.0 - 40.0;
+//        debug::println("TEMP | msb: %02X lsb: %02X raw: %04X temp: %.1f\n", msb, lsb, raw, temp);
 
         // wait here while the display mutex is locked by other process
         display_mutex.lock();

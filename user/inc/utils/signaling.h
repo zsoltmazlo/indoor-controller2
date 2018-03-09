@@ -23,7 +23,8 @@ typedef enum {
 	IDLE,
 	VOLUME,
 	LED_CHANGED,
-	CHANNEL_CHANGED
+	CHANNEL_CHANGED,
+//	OFF
 } States;
 
 void set_state(States state, bool show_previous_pattern = false);

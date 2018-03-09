@@ -91,6 +91,13 @@ void signaling::set_state(States state, bool show_previous_pattern) {
     }
 
     switch (state) {
+//        case OFF:
+//            _signaling_pattern_brightness = 0x0000000000000000;
+//            *holder_to_write_red = 0;
+//            *holder_to_write_green = 0;
+//            *holder_to_write_blue = 0;
+//            break;
+
         case INIT:
             _signaling_pattern_brightness = 0xFFFFFFFFFFFFFFFF;
             *holder_to_write_red = 0xFF;
@@ -120,7 +127,8 @@ void signaling::set_state(States state, bool show_previous_pattern) {
             break;
 
         case IDLE:
-            _signaling_pattern_brightness = 0xFDB9753112579BDF;
+//            _signaling_pattern_brightness = 0xFDB9753112579BDF;
+            _signaling_pattern_brightness = 0x0000000000000000;
             *holder_to_write_red = 0xFF;
             *holder_to_write_green = 0xFF;
             *holder_to_write_blue = 0;

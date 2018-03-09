@@ -49,7 +49,7 @@ std::string connection::ConnectionManager::getIpAddress() {
     IPAddress ip = spark::WiFi.localIP();
     char buffer[40];
 
-    // need to call directly Particle process to get really addres...
+    // need to call directly Particle process to get really address...
     Particle.process();
 
     sprintf(buffer, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
